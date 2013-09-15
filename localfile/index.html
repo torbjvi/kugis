@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=1024, user-scalable=no">
+    <style>
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0;}
+      
+      
+      .upStuff{
+      	display:none;
+      }
+      .fill {
+  position: fixed;
+  left: 0;
+  right: 200px;
+  top: 0;
+  bottom: 0;
+}
+.basemap-selector {
+  position: fixed;
+  top: 0;
+  bottom:0;
+  right: 200px;
+  width: 107px;
+  overflow-x: hidden;
+  background-color: black;
+  opacity: 0.9;
+}
+.basemap-selector-inner {
+  width: 3503px;
+}
+.basemap-preview {
+  background: none;
+  border: none;
+}
+.basemap-preview-img {
+  width: 63px;
+  border-color: white;
+  border-width: 5px;
+  border-radius: 2.5px;
+  border-style: solid;
+
+}
+.border-blue {
+  border-color: blue;
+}
+form {
+  display: inline;
+}
+
+    </style>
+<script src="colorbrewer.js"></script>
+
+
+<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+<script src="sha512.js"></script>
+<script src="../site/catiline.js"></script>
+
+<script src="../../leaflet-providers/leaflet-providers.js"></script>
+<script src="../L.TileLayer.Kartverket.js"></script>
+<script src="../basemapselector.js"></script>
+<script>
+var worker = cw(function(data,cb){
+  importScripts('../dist/shp.js');
+  shp(data).then(cb);
+});
+
+//make the map
+var options = {
+  onEachFeature:function(feature, layer) {
+    if (feature.properties) {
+      layer.bindPopup(Object.keys(feature.properties).map(function(k){
+        return k + ": " + feature.properties[k] ;
+      }).join("<br />"),{maxHeight:200});
+      }
+  },
+    style:function(feature){
+        return{opacity:1,fillOpacity:0.7,radius:6,color : colorbrewer.Spectral[11][parseInt((new jsSHA(JSON.stringify(feature), "TEXT")).getHash("SHA-512", "HEX").slice(0,16),16)%11]}
+    },
+    pointToLayer:function (feature, latlng) {
+        return L.circleMarker(latlng, {opacity:1,fillOpacity:0.7,color : colorbrewer.Spectral[11][parseInt((new jsSHA(JSON.stringify(feature), "TEXT")).getHash("SHA-512", "HEX").slice(0,16),16)%11]});
+    }
+};
+
+
+var NewButton= L.Control.extend({//creating the buttons
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+      this._map = map;
+        // create the control container with a particular class name
+        var div = L.DomUtil.create('form','bgroup');
+        div.id="dropzone";
+        
+   function handleFile(file){
+    var addIt = function(geoJson){
+      L.geoJson(geoJson,options).addTo(map);
+    }
+        var reader = new FileReader();
+        reader.onload=function(){
+            if(reader.readyState !== 2 || reader.error){
+              return;
+            }else{
+              worker.data(reader.result,[reader.result]).then(function(geoJson){
+                if(Array.isArray(geoJson)){
+                  geoJson.forEach(addIt)
+                }else{
+                  addIt(geoJson);
+                }
+              },function(a){console.log(a)});
+           }
+       };
+           reader.readAsArrayBuffer(file);
+   }
+
+ 
+var dropbox = document.getElementById("map");
+dropbox.addEventListener("dragenter", dragenter, false);
+dropbox.addEventListener("dragover", dragover, false);
+dropbox.addEventListener("drop", drop, false);
+dropbox.addEventListener("dragleave",function(){map.scrollWheelZoom.enable();},false);
+function dragenter(e) {
+  e.stopPropagation();
+  e.preventDefault();
+ map.scrollWheelZoom.disable();
+}
+ 
+function dragover(e) {
+  e.stopPropagation();
+  e.preventDefault();
+} 
+
+function drop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+ map.scrollWheelZoom.enable();
+  var dt = e.dataTransfer;
+  var files = dt.files;
+ 
+ var i = 0;
+ var len = files.length;
+ if(!len){return}
+ while(i<len){
+  handleFile(files[i]);
+  i++;
+ }
+}
+        return div;
+    }
+});
+</script>
+<link rel="stylesheet" href="../site/gh-fork-ribbon.css" />
+
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+<![endif]-->
+
+<title>Leaflet</title></head><body onload="init();">
+
+<div id="map" class="fill"></div>
+
+
+<script>
+var basemapselector;
+var map;
+var defaultLayer = L.tileLayer.provider('Stamen.Watercolor');
+function init() {
+  var map = L.map("map",
+    {
+      zoomControl:true,
+      center: [58.1467938592621, 7.9959869384765625],
+        zoom: 13
+    }
+    );
+  map.addControl(new NewButton());
+  defaultLayer.addTo(map);
+      basemapselector = new BasemapSelector(map, document.body);
+
+
+}
+//add them to the map
+
+
+
+</script>
+
+</body>
+</html>
