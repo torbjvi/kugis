@@ -1,5 +1,8 @@
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
+			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
+			'Kartverket Norges grunnkart': L.tileLayer.kartverket("norges_grunnkart"),
+			'Kartverket Norges grunnkart gråtone': L.tileLayer.kartverket("norges_grunnkart_graatone"),
 			'OpenStreetMap Default': L.tileLayer.provider('OpenStreetMap.Mapnik'),
 			'OpenStreetMap German Style': L.tileLayer.provider('OpenStreetMap.DE'),
 			'OpenStreetMap Black and White': L.tileLayer.provider('OpenStreetMap.BlackAndWhite'),
@@ -8,7 +11,7 @@ var BasemapSelector = L.Class.extend({
 			'Thunderforest Landscape': L.tileLayer.provider('Thunderforest.Landscape'),
 			'MapQuest OSM': L.tileLayer.provider('MapQuestOpen.OSM'),
 			'Stamen Toner': L.tileLayer.provider('Stamen.Toner'),
-			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
+			
 			'Esri WorldStreetMap': L.tileLayer.provider('Esri.WorldStreetMap'),
 			'Esri WorldTopoMap': L.tileLayer.provider('Esri.WorldTopoMap'),
 			'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
@@ -21,12 +24,12 @@ var BasemapSelector = L.Class.extend({
 			'Kartverket europa': L.tileLayer.kartverket("europa"),
 			'Kartverket toporaster2': L.tileLayer.kartverket("toporaster2"),
 			'Kartverket sjohovedkart2': L.tileLayer.kartverket("sjo_hovedkart2"),
-			'Kartverket Norges grunnkart': L.tileLayer.kartverket("norges_grunnkart"),
-			'Kartverket Norges grunnkart gråtone': L.tileLayer.kartverket("norges_grunnkart_graatone"),
+			
 	},
 	baseLayers: [],
 	_map: null,
 	_container: null,
+	_isHidden: true,
 	initialize: function (map, container) {
 		
 		this._map = map;
@@ -40,6 +43,24 @@ var BasemapSelector = L.Class.extend({
 	addPreviews: function () {
 		for(i = 0; i<this.baseLayers.length; i++) {
 			this.baseLayers[i].addTo(this._container);
+		}
+	},
+	toggle: function() {
+		if(this._isHidden)
+			this.show();
+		else
+			this.hide();
+	},
+	show: function() {
+		if(this._isHidden) {
+			$(this._container).animate({width: "107px"}, 500);
+			this._isHidden = false;
+		}
+	},
+	hide: function () {
+		if(!this._isHidden) {
+			$(this._container).animate({width: "0px"}, 500);
+			this._isHidden = true;
 		}
 	},
 	addHeader: function () {
@@ -85,11 +106,13 @@ var Basemap = L.Class.extend({
 		link.appendChild(img);
 		form.appendChild(link)
 		this._element = form;
+		this._link = img;
 	},
 	onClick: function (e) {
 		this._map.removeLayer(defaultLayer);
 		defaultLayer = this.layer;
 		defaultLayer.addTo(this._map);
+		this._link.style.borderColor = "#27ae60";
 		L.DomEvent.stop(e);
 		return false;
 	},

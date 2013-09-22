@@ -4,14 +4,21 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=1024, user-scalable=no">
+        <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+<link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <style>
-      html { height: 100% }
-      body { height: 100%; margin: 0; padding: 0;}
-      
-      
-      .upStuff{
-      	display:none;
-      }
+  html { 
+    height: 100% 
+  }
+  body { 
+    height: 100%; margin: 0; padding: 0;
+    background-color: #34495e;
+  }
+  
+  
+  .upStuff{
+  	display:none;
+  }
       .fill {
   position: fixed;
   left: 0;
@@ -24,9 +31,9 @@
   top: 0;
   bottom:0;
   right: 200px;
-  width: 107px;
+  width: 0px;
   overflow-x: hidden;
-  background-color: black;
+  background-color: #34495e;
   opacity: 0.9;
 }
 .basemap-selector-inner {
@@ -50,25 +57,110 @@
 form {
   display: inline;
 }
-
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 200px;
+  margin: 0;
+  padding: 0;
+}
+.layerbutton {
+    padding: 3px;
+    margin: 0px;
+    background-color: rgb(52, 73, 94);
+    border: medium none;
+    width: 100%;
+    text-align: left;
+    color: white;
+    box-shadow: 5px 5px rgb(44, 62, 80);
+    position: relative;
+    left: -5px;
+    margin-top: 5px;
+    cursor: move;
+}
+.layerlist-header {
+    margin: 0px;
+    background-color: rgb(52, 73, 94);
+    border: medium none;
+    width: 100%;
+    text-align: left;
+    color: white;
+    box-shadow: 15px 5px rgb(44, 62, 80);
+    position: relative;
+    font-weight: bold;
+    margin-top: 5px;
+    cursor: pointer;
+    padding: 7px;
+    left: -15px;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.coloricon {
+margin-right: 10px;
+padding: 1px;
+}
+.checkmark {
+  margin-right: 15px;
+padding: 1px;
+cursor: pointer;
+}
+.tool {
+  padding-left: 10px;
+}
     </style>
+
+
 <script src="colorbrewer.js"></script>
 
 
 <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 <script src="sha512.js"></script>
 <script src="./site/catiline.js"></script>
-
+<script src="./colors.js"></script>
 <script src="./../leaflet-providers/leaflet-providers.js"></script>
 <script src="./L.TileLayer.Kartverket.js"></script>
 <script src="./basemapselector.js"></script>
+<script src="./sidebar.js"></script>
+
+<script type="text/javascript" src="../Wicket/wicket.js"></script>
+<script type="text/javascript" src="../Wicket/wicket-leaflet.js"></script>
+  <script type="text/javascript" src="../jsts/lib/javascript.util.js"></script>
+  <script type="text/javascript" src="../jsts/lib/jsts.js"></script>
+  <script type="text/javascript" src="https://raw.github.com/olooney/attache-array-js/master/attache.array.min.js"></script>
+  <script src="./../proj4js/dist/proj4.js"></script>
+
 <script>
+var sidebar, layerlist;
+var colors = new Colors();
 var worker = cw(function(data,cb){
   importScripts('./dist/shp.js');
   shp(data).then(cb);
 });
-
+var color;
 //make the map
+function transformWkt(input, fromCRS, toCRS) {
+  
+  var c = input.components;
+  if(c.push != null) {
+    var newArray = [];
+    for(var i = 0; i < c.length; i++) {
+      var newArray2 = [];
+      for(var j=0; j<c[i].length; j++) {
+        var utm = proj4(fromCRS,toCRS, c[i][j])
+        newArray2.push(utm);
+      }
+      newArray.push(newArray2);
+    }
+  }
+  input.components = newArray;
+  return input;
+} 
+
 var options = {
   onEachFeature:function(feature, layer) {
     if (feature.properties) {
@@ -76,9 +168,34 @@ var options = {
         return k + ": " + feature.properties[k] ;
       }).join("<br />"),{maxHeight:200});
       }
+      layer.on('click', function (e) {
+        var wkt = new Wkt.Wkt();
+        var epsg3857 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs";
+        var epsg4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+
+        wkt.fromObject(e.target);
+        //var source = new Proj4js.Proj('EPSG:4326');
+        //var dest = new Proj4js.Proj('EPSG:3857'); 
+        wkt = transformWkt(wkt, epsg4326, epsg3857);
+        // Serialize a WKT string from that geometry
+        var wktStr = wkt.write();
+            var reader = new jsts.io.WKTReader();
+            var input = reader.read(wktStr);
+                var buffer = input.buffer(1);
+                var parser = new jsts.io.GeoJSONParser();
+                    buffer = parser.write(buffer);
+                    layerlist.addLayer(L.geoJson(buffer));
+                    
+        
+      });
   },
     style:function(feature){
-        return{opacity:1,fillOpacity:0.7,radius:6,color : colorbrewer.Spectral[11][parseInt((new jsSHA(JSON.stringify(feature), "TEXT")).getHash("SHA-512", "HEX").slice(0,16),16)%11]}
+        return {
+          opacity:1,
+          fillOpacity:0.7,
+          radius:6,
+          color: color
+        }
     },
     pointToLayer:function (feature, latlng) {
         return L.circleMarker(latlng, {opacity:1,fillOpacity:0.7,color : colorbrewer.Spectral[11][parseInt((new jsSHA(JSON.stringify(feature), "TEXT")).getHash("SHA-512", "HEX").slice(0,16),16)%11]});
@@ -98,8 +215,10 @@ var NewButton= L.Control.extend({//creating the buttons
         
    function handleFile(file){
     var addIt = function(geoJson){
-      console.log(geoJson.fileName)
-      L.geoJson(geoJson,options).addTo(map);
+       color = colors.next();
+       var layer =L.geoJson(geoJson,options);
+      layer.fileName = geoJson.fileName;
+       layerlist.addLayer(layer, color);
     }
         var reader = new FileReader();
         reader.onload=function(){
@@ -108,6 +227,7 @@ var NewButton= L.Control.extend({//creating the buttons
             }else{
               worker.data(reader.result,[reader.result]).then(function(geoJson){
                 if(Array.isArray(geoJson)){
+                 
                   geoJson.forEach(addIt)
                 }else{
                   addIt(geoJson);
@@ -181,6 +301,24 @@ function init() {
   defaultLayer.addTo(map);
       basemapselector = new BasemapSelector(map, document.body);
 
+basemapselector.hide();
+  sidebar = new Sidebar(map);
+  layerlist = new Sidebar.LayerList(map);
+  asd = new Sidebar.Basemap();
+  tools = new Sidebar.Tools();
+  var toolColors = new Colors();
+  tools.addTo(sidebar);
+  tools.addTool(new Sidebar.Tool.Buffer(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Distance(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Centroid(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));
+  layerlist.addTo(sidebar);
+  asd.addTo(sidebar);
+  sidebar.addTo(document.body);
 
 }
 //add them to the map
@@ -189,5 +327,7 @@ function init() {
 
 </script>
 
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+ <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 </body>
 </html>
