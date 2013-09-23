@@ -33,15 +33,19 @@
   right: 200px;
   width: 0px;
   overflow-x: hidden;
-  background-color: #34495e;
+  background: none;
   opacity: 0.9;
 }
 .basemap-selector-inner {
   width: 3503px;
 }
+.basemap-selected {
+  border-color: #27ae60 !important;
+}
 .basemap-preview {
   background: none;
   border: none;
+  padding-bottom: 15px;
 }
 .basemap-preview-img {
   width: 63px;
@@ -169,26 +173,12 @@ var options = {
       }).join("<br />"),{maxHeight:200});
       }
       layer.on('click', function (e) {
-        var wkt = new Wkt.Wkt();
-        var epsg3857 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs";
-        var epsg4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-
-        wkt.fromObject(e.target);
-        //var source = new Proj4js.Proj('EPSG:4326');
-        //var dest = new Proj4js.Proj('EPSG:3857'); 
-        wkt = transformWkt(wkt, epsg4326, epsg3857);
-        // Serialize a WKT string from that geometry
-        var wktStr = wkt.write();
-            var reader = new jsts.io.WKTReader();
-            var input = reader.read(wktStr);
-                var buffer = input.buffer(1);
-                var parser = new jsts.io.GeoJSONParser();
-                    buffer = parser.write(buffer);
-                    layerlist.addLayer(L.geoJson(buffer));
+        
                     
         
       });
   },
+  smoothFactor: 2.0,
     style:function(feature){
         return {
           opacity:1,

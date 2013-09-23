@@ -112,7 +112,9 @@ var Basemap = L.Class.extend({
 		this._map.removeLayer(defaultLayer);
 		defaultLayer = this.layer;
 		defaultLayer.addTo(this._map);
-		this._link.style.borderColor = "#27ae60";
+		basemapselector.hide();
+		$('.basemap-selected').removeClass('basemap-selected');
+		$(this._link).addClass('basemap-selected');
 		L.DomEvent.stop(e);
 		return false;
 	},

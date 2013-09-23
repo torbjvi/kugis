@@ -1,6 +1,7 @@
 var Sidebar = L.Class.extend({
 	initialize: function (map) {
 		this._element = L.DomUtil.create('div', 'sidebar');
+		this._element.appendChild(L.DomUtil.create('i', 'icon-globe icon-5'))
 		this._map = map;
 	},
 	addTo: function (el) {
@@ -15,7 +16,8 @@ Sidebar.LayerList = L.Class.extend({
 	initialize: function (map) {
 		this._container = L.DomUtil.create('ul', '');
 		this._header =  L.DomUtil.create('li', 'layerlist-header');
-		this._header.appendChild(document.createTextNode("Layers"));
+		this._header.appendChild(L.DomUtil.create('i', 'icon-reorder'));
+		this._header.appendChild(document.createTextNode(" Layers"));
 		this._listcontainer = L.DomUtil.create('li', 'layerlist-listcontainer');
 		this._element = L.DomUtil.create('ul', 'layerlist');
 		this._container.appendChild(this._header);
@@ -62,7 +64,8 @@ Sidebar.Basemap = L.Class.extend({
 	initialize: function () {
 		this._container = L.DomUtil.create('ul', '');
 		this._header =  L.DomUtil.create('li', 'layerlist-layer ui-state-default layerbutton');
-		this._header.appendChild(document.createTextNode("Basemap"));
+		this._header.title =  "Clicl me to choose a different basemap"
+		this._header.appendChild(document.createTextNode("background"));
 		this._header.style.borderLeft="10px solid #e74c3c";
 		this._header.style.cursor="pointer";
 		this._container.appendChild(this._header);
@@ -79,7 +82,8 @@ Sidebar.Tools = L.Class.extend({
 	initialize: function () {
 		this._container = L.DomUtil.create('ul', '');
 		this._header =  L.DomUtil.create('li', 'layerlist-header');
-		this._header.appendChild(document.createTextNode("Tools"));
+		this._header.appendChild(L.DomUtil.create('i', 'icon-legal'));
+		this._header.appendChild(document.createTextNode(" Tools"));
 		this._listcontainer = L.DomUtil.create('li', 'layerlist-listcontainer');
 		this._element = L.DomUtil.create('ul', 'layerlist');
 		this._container.appendChild(this._header);
@@ -101,6 +105,7 @@ Sidebar.LayerList.Button = L.Class.extend({
 	_map: null,
 	_element: null,
 	initialize: function (layer, map, color) {
+		console.log(layer);
 		this._layer = layer;
 		this._map = map;
 		console.log("r");
@@ -138,6 +143,13 @@ Sidebar.LayerList.Button = L.Class.extend({
 			L.DomUtil.removeClass(this._checkIcon, "icon-sign-blank");
 			L.DomUtil.addClass(this._checkIcon, "icon-check-sign");
 		}
+		console.log();
+ 	var reader = new jsts.io.GeoJSONReader();
+
+    var input = reader.read(this._layer.toGeoJSON());
+
+    var buffer = input.buffer(20);
+
 	},
 	getElement: function() {
 		return this._element;
@@ -152,6 +164,7 @@ Sidebar.Tool = L.Class.extend({
 		this._map = map;
 		this._element = L.DomUtil.create("li", "layerlist-layer ui-state-default layerbutton");
 		this._element.style.borderLeft="10px solid "+color;
+		this._element.style.cursor = "pointer";
 		this._element.this = this;
 		this._element.appendChild(document.createTextNode(this.title));
 		
