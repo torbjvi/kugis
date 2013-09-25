@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="utf-8">
@@ -99,6 +99,11 @@ form {
     padding: 7px;
     left: -15px;
 }
+input {
+  width: 40px;
+  display: inline;
+  text-align: right;
+}
 ul {
   list-style: none;
   margin: 0;
@@ -115,6 +120,19 @@ cursor: pointer;
 }
 .tool {
   padding-left: 10px;
+}
+.droppable {
+  width: 155px;
+  border-color: white;
+  border-style: dashed;
+  border-width: 5px;
+  padding: 8px;
+  margin:5px;
+  text-align: center;
+  vertical-align: middle;
+  opacity: 0.6;
+  border-radius: 5px;
+
 }
     </style>
 
@@ -137,6 +155,7 @@ cursor: pointer;
   <script type="text/javascript" src="../jsts/lib/jsts.js"></script>
   <script type="text/javascript" src="https://raw.github.com/olooney/attache-array-js/master/attache.array.min.js"></script>
   <script src="./../proj4js/dist/proj4.js"></script>
+  <script src="./utils.js"></script>
 
 <script>
 var sidebar, layerlist;
@@ -147,23 +166,7 @@ var worker = cw(function(data,cb){
 });
 var color;
 //make the map
-function transformWkt(input, fromCRS, toCRS) {
-  
-  var c = input.components;
-  if(c.push != null) {
-    var newArray = [];
-    for(var i = 0; i < c.length; i++) {
-      var newArray2 = [];
-      for(var j=0; j<c[i].length; j++) {
-        var utm = proj4(fromCRS,toCRS, c[i][j])
-        newArray2.push(utm);
-      }
-      newArray.push(newArray2);
-    }
-  }
-  input.components = newArray;
-  return input;
-} 
+
 
 var options = {
   onEachFeature:function(feature, layer) {
@@ -173,12 +176,14 @@ var options = {
       }).join("<br />"),{maxHeight:200});
       }
       layer.on('click', function (e) {
-        
+        console.log(e.target);
+
+// Serialize a WKT string from that geometry
                     
         
       });
   },
-  smoothFactor: 2.0,
+  smoothFactor: 3.0,
     style:function(feature){
         return {
           opacity:1,
@@ -278,7 +283,7 @@ function drop(e) {
 <script>
 var basemapselector;
 var map;
-var defaultLayer = L.tileLayer.provider('Stamen.Watercolor');
+var defaultLayer = L.tileLayer.kartverket("norges_grunnkart_graatone");
 function init() {
   var map = L.map("map",
     {

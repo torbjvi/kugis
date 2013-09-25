@@ -53,13 +53,13 @@ var BasemapSelector = L.Class.extend({
 	},
 	show: function() {
 		if(this._isHidden) {
-			$(this._container).animate({width: "107px"}, 500);
+			$(this._container).show().animate({width: "107px"}, 500);
 			this._isHidden = false;
 		}
 	},
 	hide: function () {
 		if(!this._isHidden) {
-			$(this._container).animate({width: "0px"}, 500);
+			$(this._container).animate({width: "0px"}, 500).hide();
 			this._isHidden = true;
 		}
 	},
@@ -112,7 +112,7 @@ var Basemap = L.Class.extend({
 		this._map.removeLayer(defaultLayer);
 		defaultLayer = this.layer;
 		defaultLayer.addTo(this._map);
-		basemapselector.hide();
+		basemapselector .hide();
 		$('.basemap-selected').removeClass('basemap-selected');
 		$(this._link).addClass('basemap-selected');
 		L.DomEvent.stop(e);
