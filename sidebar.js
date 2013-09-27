@@ -197,14 +197,68 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 	title: "Buffer",
 	_droppableText: "Drop a layer here to buffer!",
 	afterDrop: function (event, context) {
-
-  		logger.newLog("Buffering...");
+		
+		var message = "test";
+		bufferWorker = new Worker('workers.js');
+		dissolveWorker = new Worker('dissolve.js');
+		logger.newLog("Buffer");
 		dissolve = this._dissolve.checked;
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
 		layer = event.toElement.this._layer;
-		logger.newLog("Buffer");
+		 bufferWorker.onmessage = function(evt) {
+		 	console.log("Buffering done");
+		 	var wktsb = evt.data;
+		 	
+		 	if(!dissolve) {
+		 		var color = colors.next();
+				var group = L.featureGroup();
+				group.fileName = layer.fileName+"_buffer"+distance+"m";
+		 		for(var i = 0; i<wktsb.length;i++) {
+		 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
+		 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
+					var d = wktsb[i].toObject();
+					group.addLayer(d);
+					d.setStyle({
+				          opacity:1,
+				          fillOpacity:0.7,
+				          radius:6,
+				          color: color
+	    			});
+				}
+				layerlist.addLayer(group, color);
+				logger.done();
+
+		 	}
+		 	else {
+		 		for(var i = 0; i<wktsb.length;i++) {
+		 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
+		 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
+		 			wktsb[i] = wktsb[i].write();
+		 		}
+		 		dissolveWorker.postMessage(wktsb);
+		 	}
+		 	
+		 	
+
+		  };
+		  dissolveWorker.onmessage = function (evt) {
+		  	console.log(evt);
+		  	var color = colors.next();
+			var group = L.featureGroup();
+			group.fileName = layer.fileName+"_buffer"+distance+"m";
+		  	var d = new Wkt.Wkt(evt.data).toObject().addTo(layer._map);
+		  	group.addLayer(d);
+			d.setStyle({
+		          opacity:1,
+		          fillOpacity:0.7,
+		          radius:6,
+		          color: color
+			});
+			layerlist.addLayer(group, color);
+			logger.done();
+		  };
 		for(key in layer._layers) {
 					if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
 						pointLayer = true;
@@ -217,7 +271,12 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		else {
 			wkts = WktUtils.pointLayerToWkt(layer);
 		}
-		setTimeout(function () {
+		for(var i = 0;i<wkts.length;i++) {
+			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
+			wkts[i] = wkts[i].write();
+		}
+		bufferWorker.postMessage({wkt: wkts, dist: distance});
+		/*setTimeout(function () {
 		wkts = WktUtils.buffer(wkts, distance);
 		var color = colors.next();
 		var group = L.featureGroup();
@@ -250,8 +309,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			
 			group.fileName = layer.fileName+"_buffer"+distance+"m";
 			layerlist.addLayer(group, color);
-		}, 5000);
-		logger.done();
+		}, 5000);*/
 
 	},
 	createToolOptions: function () {

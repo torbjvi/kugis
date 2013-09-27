@@ -154,15 +154,14 @@ cursor: pointer;
 .logger {
   z-index: 700000;
   position: fixed;
-  top: 0;
   bottom: 0;
   left: 0;
-  right: 0;
+  height: 100px;
   background: none;
   opacity: 1
 }
 ul.logger-list {
-  position: fixed;
+  position: relative;
 height: 80px;
 width: 400px;
 opacity: 0.9;
@@ -227,6 +226,7 @@ li.logger-list {
   <script src="./utils.js"></script>
 
 <script>
+
 var sidebar, layerlist;
 var colors = new Colors();
 var worker = cw(function(data,cb){
@@ -372,6 +372,7 @@ function drop(e) {
         return div;
     }
 });
+
 </script>
 
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
@@ -389,6 +390,9 @@ var basemapselector;
 var map;
 var defaultLayer = L.tileLayer.provider('Acetate');
 var logger;
+var bufferWorker = new Worker('workers.js');
+var dissolveWorker = new Worker('dissolve.js');
+var sidebar;
 function init() {
   var map = L.map("map",
     {
@@ -446,7 +450,6 @@ basemapselector.hide();
  <script src='jsts.js'></script>
  <script src="logger.js"></script>
  <script src="operative.min.js"></script>
- <script src="workers.js"></script>
  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
 </body>

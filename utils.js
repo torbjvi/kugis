@@ -91,6 +91,7 @@ var WktUtils = {};
 			return wkts;
 		var wkt = wkts[0];
 		for(var i = 1; i<wkts.length;i++) {
+			console.log(i+'/'+wkts.length);
 			wkt = WktUtils.union(wkt, wkts[i]);
 		}
 		return wkt;					
