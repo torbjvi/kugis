@@ -298,6 +298,26 @@ var NewButton= L.Control.extend({//creating the buttons
        };
            reader.readAsArrayBuffer(file);
    }
+    function handleGeosjon(file){
+    var addIt = function(geoJson){
+       color = colors.next();
+       var layer =L.geoJson(geoJson,options);
+      layer.fileName = geoJson.fileName;
+       layerlist.addLayer(layer, color);
+    }
+        var reader = new FileReader();
+        reader.onload=function(){
+            if(reader.readyState !== 2 || reader.error){
+              return;
+            }else{
+              var geojson = JSON.parse(reader.result);
+              geojson.fileName = file.name.toLowerCase().replace(".geojson", "");
+                  addIt(geojson);
+              
+           }
+       };
+           reader.readAsText(file);
+   }
 
  
 var dropbox = document.getElementById("map");
@@ -325,10 +345,19 @@ function drop(e) {
  
  var i = 0;
  var len = files.length;
+ console.log();
  if(!len){return}
- while(i<len){
-  handleFile(files[i]);
-  i++;
+  if(files[0].name.toLowerCase().indexOf(".geojson") > -1) {
+    while(i<len){
+    handleGeosjon(files[i]);
+    i++;
+   }
+  }
+  else {
+   while(i<len){
+    handleFile(files[i]);
+    i++;
+   }
  }
 }
         return div;
@@ -397,6 +426,9 @@ basemapselector.hide();
 </script>
 
  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+ <script src='attache.array.min.js'></script>
+ <script src='javascript.util.js'></script>;
+ <script src='jsts.js'></script>
  <script src="logger.js"></script>
  <script src="operative.min.js"></script>
  <script src="workers.js"></script>

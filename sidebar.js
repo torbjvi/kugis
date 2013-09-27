@@ -207,16 +207,10 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		else {
 			wkts = WktUtils.pointLayerToWkt(layer);
 		}
+		setTimeout(function () {
+		wkts = WktUtils.buffer(wkts, distance);
+
 		
-		for(var i=0;i<wkts.length;i++) {
-	    	 var wkt = new Wkt.Wkt();
-		     wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
-			wkts[i] = wkts[i].write();
-		}
-		lodashWorker(1, 2, function(result) {
-    result; // => 3
-});
-		/*
 		if(dissolve) {
 			var pass = WktUtils.dissolve(wkts);
 			var d = pass.toObject();
@@ -237,7 +231,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			var group = L.featureGroup().addLayer(d);
 			group.fileName = layer.fileName+"_buffer"+distance+"m";
 			layerlist.addLayer(group, color);
-		}, 3000);*/
+		}, 5000);
 		logger.done();
 
 	},
