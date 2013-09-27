@@ -1,5 +1,6 @@
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
+		'Acetate': L.tileLayer.provider('Acetate'),
 			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
 			'Kartverket Norges grunnkart': L.tileLayer.kartverket("norges_grunnkart"),
 			'Kartverket Norges grunnkart gråtone': L.tileLayer.kartverket("norges_grunnkart_graatone"),
@@ -18,7 +19,7 @@ var BasemapSelector = L.Class.extend({
 			'Esri WorldShadedRelief': L.tileLayer.provider('Esri.WorldShadedRelief'),
 			'Nokia Normal Day': L.tileLayer.provider('Nokia.normalDay'),
 			'Nokia Terrain': L.tileLayer.provider('Nokia.terrainDay'),
-			'Acetate': L.tileLayer.provider('Acetate'),
+			
 			'Kartverket topo2': L.tileLayer.kartverket("topo2"),
 			'Kartverket topo2graatone': L.tileLayer.kartverket("topo2graatone"),
 			'Kartverket europa': L.tileLayer.kartverket("europa"),

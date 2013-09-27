@@ -387,7 +387,7 @@ function drop(e) {
 <script>
 var basemapselector;
 var map;
-var defaultLayer = L.tileLayer.kartverket("norges_grunnkart_graatone");
+var defaultLayer = L.tileLayer.provider('Acetate');
 var logger;
 function init() {
   var map = L.map("map",

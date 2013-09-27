@@ -35,11 +35,12 @@ var Logger = L.Class.extend({
 
 	},
 	newLog: function (title) {
+		$(this.element).show();
 		this.titleField.innerHTML = title;
 		$(this.progressbar).progressbar({
       		value: false
   		 });
-		$(this.element).show();
+		
 	},
 	done: function () {
 		$(this.element).hide();

@@ -199,7 +199,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 	afterDrop: function (event, context) {
 
   		logger.newLog("Buffering...");
-		dissolve = true;
+		dissolve = this._dissolve.checked;
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
@@ -219,26 +219,35 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		}
 		setTimeout(function () {
 		wkts = WktUtils.buffer(wkts, distance);
-
-		
+		var color = colors.next();
+		var group = L.featureGroup();
 		if(dissolve) {
 			var pass = WktUtils.dissolve(wkts);
 			var d = pass.toObject();
-		}
-		else {
-			for(var i = 0; i<wkts.length;i++) {
-				var d = wkts[i].toObject();
-			}
-		}
-			var color = colors.next();
-				
 			d.setStyle({
 			          opacity:1,
 			          fillOpacity:0.7,
 			          radius:6,
 			          color: color
     			});
-			var group = L.featureGroup().addLayer(d);
+			
+			group.addLayer(d);
+		}
+		else {
+			for(var i = 0; i<wkts.length;i++) {
+				var d = wkts[i].toObject();
+				group.addLayer(d);
+				d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+    			});
+			
+			}
+		}
+			
+			
 			group.fileName = layer.fileName+"_buffer"+distance+"m";
 			layerlist.addLayer(group, color);
 		}, 5000);
@@ -253,6 +262,14 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
 		element.appendChild(this._distance);
 		element.appendChild(document.createTextNode(" m"));
+		element.appendChild(L.DomUtil.create("br", ""));
+		element.appendChild(document.createTextNode("Dissolve: "));
+		this._dissolve = L.DomUtil.create("input", "input-dissolve");
+		this._dissolve.type = "checkbox";
+		this._dissolve.checked = false;
+		this._dissolve.title = "Warning! This takes a long time!"
+		L.DomEvent.addListener(this._dissolve, "click", L.DomEvent.stopPropagation);
+		element.appendChild(this._dissolve);
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
@@ -358,7 +375,7 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 	title: "Difference",
 		wkt1: null,
 	wkt2: null,
-	_droppableText: "Not implemented",
+	_droppableText: "Drop two layers here in succession to \"differ\" them",
 	afterDrop: function (event, context) {
 		logger.newLog("Difference...");
 		layer = event.toElement.this._layer;
@@ -411,10 +428,6 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 	},
 	createToolOptions: function () {
 		element = L.DomUtil.create("div", "tool-options");
-		this._distance = L.DomUtil.create("input", "buffer-distance");
-		this._distance.value = 100;
-		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
-		element.appendChild(this._distance);
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
