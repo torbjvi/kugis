@@ -4,12 +4,6 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=1024, user-scalable=no">
-
-
-<link rel="shortcut icon"
- href="cow_head.png" />
-
-
         <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
 <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <style>
@@ -151,56 +145,6 @@ cursor: pointer;
   border-radius: 5px;
 
 }
-.logger {
-  z-index: 700000;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: none;
-  opacity: 1
-}
-ul.logger-list {
-  position: fixed;
-height: 80px;
-width: 400px;
-opacity: 0.9;
-margin: auto;
-background-color: rgb(52, 73, 94);;
-    box-shadow: 15px 15px rgb(44, 62, 80);
-    color: white;
-
-}
-li.logger-list {
-  position: relative;
-  margin: 0px;
-  
-}
-.logger-header {
-  height: 40%;
-  font-weight: bold;
-  font-size: 2em;
-  margin-top: 10px;
-  text-align: center;
-}
-.logger-progressbar {
-  bottom: 0px;
-  height: 60%;
-}
-.logger-messages {
-  top: 40px;
-  bottom: 80px;
-  background-color: #95a5a6;
-  overflow-y: auto;
-}
-#progressbar {
-  background-color: black;
-  width: 100%;
-  height: 90%;
-  position: relative;
-}
-
     </style>
 
 
@@ -218,7 +162,9 @@ li.logger-list {
 
 <script type="text/javascript" src="../Wicket/wicket.js"></script>
 <script type="text/javascript" src="../Wicket/wicket-leaflet.js"></script>
-  <script type="text/javascript" src="attache.array.min.js"></script>
+  <script type="text/javascript" src="../jsts/lib/javascript.util.js"></script>
+  <script type="text/javascript" src="../jsts/lib/jsts.js"></script>
+  <script type="text/javascript" src="https://raw.github.com/olooney/attache-array-js/master/attache.array.min.js"></script>
   <script src="./../proj4js/dist/proj4.js"></script>
   <script src="./utils.js"></script>
 
@@ -227,7 +173,6 @@ var sidebar, layerlist;
 var colors = new Colors();
 var worker = cw(function(data,cb){
   importScripts('./dist/shp.js');
-  console.log("hello from work");
   shp(data).then(cb);
 });
 var color;
@@ -337,11 +282,11 @@ function drop(e) {
 </script>
 
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
-<link rel="stylesheet" href="jquery-ui-1.10.3.custom.min.css" />
+<!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
 <![endif]-->
 
-<title>-gis</title></head><body onload="init();">
+<title>Leaflet</title></head><body onload="init();">
 
 <div id="map" class="fill"></div>
 
@@ -350,7 +295,6 @@ function drop(e) {
 var basemapselector;
 var map;
 var defaultLayer = L.tileLayer.kartverket("norges_grunnkart_graatone");
-var logger;
 function init() {
   var map = L.map("map",
     {
@@ -371,23 +315,16 @@ basemapselector.hide();
   var toolColors = new Colors();
   tools.addTo(sidebar);
   tools.addTool(new Sidebar.Tool.Buffer(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.BufferRings(map, toolColors.next()));
-
-  tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
-
-  tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
-  /*
   tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Distance(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Centroid(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));*/
+  tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));
   layerlist.addTo(sidebar);
   asd.addTo(sidebar);
   sidebar.addTo(document.body);
-  logger = new Logger();
 
 }
 //add them to the map
@@ -397,10 +334,6 @@ basemapselector.hide();
 </script>
 
  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
- <script src="logger.js"></script>
- <script src="operative.min.js"></script>
- <script src="workers.js"></script>
  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-
 </body>
 </html>
