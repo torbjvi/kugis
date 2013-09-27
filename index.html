@@ -200,7 +200,11 @@ li.logger-list {
   height: 90%;
   position: relative;
 }
-
+.file-dropper {
+  position: absolute;
+  bottom: 5px;
+  width: 165px !important;
+}
     </style>
 
 
@@ -320,11 +324,16 @@ var NewButton= L.Control.extend({//creating the buttons
    }
 
  
-var dropbox = document.getElementById("map");
+var dropbox = document.getElementById("file-dropper");
 dropbox.addEventListener("dragenter", dragenter, false);
 dropbox.addEventListener("dragover", dragover, false);
 dropbox.addEventListener("drop", drop, false);
 dropbox.addEventListener("dragleave",function(){map.scrollWheelZoom.enable();},false);
+var mapDiv = document.getElementById("map");
+mapDiv.addEventListener("dragenter", dragenter, false);
+mapDiv.addEventListener("dragover", dragover, false);
+mapDiv.addEventListener("drop", drop, false);
+mapDiv.addEventListener("dragleave",function(){map.scrollWheelZoom.enable();},false);
 function dragenter(e) {
   e.stopPropagation();
   e.preventDefault();
@@ -388,19 +397,21 @@ function init() {
         zoom: 13
     }
     );
-  map.addControl(new NewButton());
+  
   defaultLayer.addTo(map);
       basemapselector = new BasemapSelector(map, document.body);
 
 basemapselector.hide();
   sidebar = new Sidebar(map);
+   
   layerlist = new Sidebar.LayerList(map);
   asd = new Sidebar.Basemap();
+ 
   tools = new Sidebar.Tools();
   var toolColors = new Colors();
   tools.addTo(sidebar);
   tools.addTool(new Sidebar.Tool.Buffer(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.BufferRings(map, toolColors.next()));
+  //tools.addTool(new Sidebar.Tool.BufferRings(map, toolColors.next()));
 
   tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
 
@@ -415,7 +426,11 @@ basemapselector.hide();
   tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));*/
   layerlist.addTo(sidebar);
   asd.addTo(sidebar);
+  var dropper = new Sidebar.FileDropper();
+  dropper.addTo(sidebar);
   sidebar.addTo(document.body);
+
+  map.addControl(new NewButton());
   logger = new Logger();
 
 }
