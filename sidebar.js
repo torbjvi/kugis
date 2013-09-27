@@ -53,25 +53,6 @@ Sidebar.LayerList = L.Class.extend({
 			this._element.insertBefore(layerButton.getElement(),this._element.childNodes[0]);
 
 	},
-	layerToWkt: function (layer) {
-		if(layer.fileName != "Points") {
-		console.log(layer);
-		var wkts = [];
-		layer.eachLayer(function (l) {
-			        var wkt = new Wkt.Wkt();
-
-// Deconstruct an existing point (or "marker") feature
-		wkt.fromObject(l);
-		wkts.push(wkt);
-// "[ {x: 10, y: 30} ]"
-		});
-		var w = wkts[0];
-		for(var i = 1; i<wkts.length; i++) {
-			w.merge(wkts[i]);
-		}
-		console.log(w.write());
-	}
-	},
 	addTo: function(element) {
 		element.getElement().appendChild(this._container);
 	},
@@ -164,11 +145,6 @@ Sidebar.LayerList.Button = L.Class.extend({
 			L.DomUtil.removeClass(this._checkIcon, "icon-sign-blank");
 			L.DomUtil.addClass(this._checkIcon, "icon-check-sign");
 		}
- 	var reader = new jsts.io.GeoJSONReader();
-
-    var input = reader.read(this._layer.toGeoJSON());
-
-    var buffer = input.buffer(20);
 
 	},
 	getElement: function() {
@@ -211,36 +187,47 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 	title: "Buffer",
 	_droppableText: "Drop a layer here to buffer!",
 	afterDrop: function (event, context) {
+
+  		logger.newLog("Buffering...");
+		dissolve = true;
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
 		layer = event.toElement.this._layer;
+		logger.newLog("Buffer");
 		for(key in layer._layers) {
 					if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
 						pointLayer = true;
 					break;
 		}
+		var wkts;
+		if(!pointLayer) {
+			wkts = WktUtils.layerToWkt(layer);
+		}
+		else {
+			wkts = WktUtils.pointLayerToWkt(layer);
+		}
 		
-		if(pointLayer)
-			var ccc = WktUtils.pointLayerToWkt(layer);
-		else
-			var ccc= WktUtils.layerToWkt(layer);
-
-		console.log("WKT generated");
-			comp = WktUtils.transformWktComponentsToWebMercator(ccc.components);
-			console.log("WKT reprojected");
-			ccc.components = comp;
-			console.log("Started buffering");
-			buffer = WktUtils.buffer(ccc.write(), distance);
-			console.log("Buffering done");
-			var asd = new Wkt.Wkt(buffer);
-			console.log("Reprojecting buffer")
-			asd.components = WktUtils.transformWktToWGS84(asd.components);
-			console.log("Buffer reprojected");
-			var d = asd.toObject();
-			console.log(d);
+		for(var i=0;i<wkts.length;i++) {
+	    	 var wkt = new Wkt.Wkt();
+		     wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
+			wkts[i] = wkts[i].write();
+		}
+		lodashWorker(1, 2, function(result) {
+    result; // => 3
+});
+		/*
+		if(dissolve) {
+			var pass = WktUtils.dissolve(wkts);
+			var d = pass.toObject();
+		}
+		else {
+			for(var i = 0; i<wkts.length;i++) {
+				var d = wkts[i].toObject();
+			}
+		}
 			var color = colors.next();
-			
+				
 			d.setStyle({
 			          opacity:1,
 			          fillOpacity:0.7,
@@ -248,10 +235,10 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			          color: color
     			});
 			var group = L.featureGroup().addLayer(d);
-			group.fileName = layer.fileName+'_buffer';
-			layerlist.addLayer(group,color);
-
-		
+			group.fileName = layer.fileName+"_buffer"+distance+"m";
+			layerlist.addLayer(group, color);
+		}, 3000);*/
+		logger.done();
 
 	},
 	createToolOptions: function () {
@@ -276,41 +263,38 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		
 	}
 });
-Sidebar.Tool.Intersect = Sidebar.Tool.extend({
-	title: "Intersect"
-});
-Sidebar.Tool.Difference = Sidebar.Tool.extend({
-	title: "Difference"
-});
-Sidebar.Tool.Simplify = Sidebar.Tool.extend({
-	title: "Simplify"
-});
-Sidebar.Tool.Overlay = Sidebar.Tool.extend({
-	title: "Overlay",
-	wkt1: null,
-	wkt2: null,
-	_droppableText: "Not implemented",
+Sidebar.Tool.BufferRings = Sidebar.Tool.extend({
+
+	title: "BufferRings",
+	_droppableText: "Drop a layer here create buffer rings!",
 	afterDrop: function (event, context) {
+		console.log("Drop");
+		var pointLayer = false;
+		var distance = context._distance.value;
 		layer = event.toElement.this._layer;
-		if(this.wkt1 == null) {
-			this.wkt1 = WktUtils.layerToWkt(layer);
-			comp = WktUtils.transformWktComponentsToWebMercator(this.wkt1.components);
-			this.wkt1.components = comp;
-		}
-		else {
-			console.log("Drop");
-			var distance = context._distance.value;
+		var filename = layer.fileName;
+		var layers = [];
+		for(var i = 0; i<context._rings.value; i++) {
+			for(key in layer._layers) {
+						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
+							pointLayer = true;
+						break;
+			}
 			
-			if(layer.fileName != "Points") {
-				this.wkt2 = WktUtils.layerToWkt(layer);
-				console.log("WKT generated");
-				comp = WktUtils.transformWktComponentsToWebMercator(this.wkt2.components);
+			if(pointLayer)
+				var ccc = WktUtils.pointLayerToWkt(layer);
+			else
+				var ccc= WktUtils.layerToWkt(layer);
+
+			console.log("WKT generated");
+				comp = WktUtils.transformWktComponentsToWebMercator(ccc.components);
 				console.log("WKT reprojected");
-				this.wkt2.components = comp;
+				ccc.components = comp;
 				console.log("Started buffering");
-				overlay = WktUtils.overlay(this.wkt1.write(), this.wkt2.write());
+				buffer = WktUtils.buffer(ccc.write(), distance);
 				console.log("Buffering done");
-				var asd = new Wkt.Wkt(overlay);
+
+				var asd = new Wkt.Wkt(buffer);
 				console.log("Reprojecting buffer")
 				asd.components = WktUtils.transformWktToWGS84(asd.components);
 				console.log("Buffer reprojected");
@@ -325,13 +309,101 @@ Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 				          color: color
 	    			});
 				var group = L.featureGroup().addLayer(d);
-				group.fileName = layer.fileName+'_buffer';
-				layerlist.addLayer(group,color);
+				group.fileName = filename+'_buffer'+(i+1)*context._distance.value;
+				layers.push({layer: group, color: color});
+				layer = group;
+				pointLayer = false;
+		}
+		for(var i = layers.length-1; i > -1; i--) {
+			layerlist.addLayer(layers[i].layer, layers[i].color);
+		}
+		
+
+	},
+	createToolOptions: function () {
+		element = L.DomUtil.create("div", "tool-options");
+		element.appendChild(document.createTextNode("Distance: "));
+		this._distance = L.DomUtil.create("input", "buffer-distance");
+		this._distance.value = 25;
+		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
+		element.appendChild(this._distance);
+		element.appendChild(document.createTextNode(" m"));
+		element.appendChild(document.createTextNode("No. of rings: "));
+		this._rings = L.DomUtil.create("input", "buffer-distance");
+		this._rings.value = 5;
+		L.DomEvent.addListener(this._rings, "click", L.DomEvent.stopPropagation);
+		element.appendChild(this._rings);
+		this._droppable = L.DomUtil.create('div', 'droppable');
+
+		var con = this;
+		$(this._droppable).droppable({
+			drop: function (event, ui) {
+				con.afterDrop(event, con);
 			}
+		});
+		this._droppable.appendChild(document.createTextNode(this._droppableText));
+		element.appendChild(this._droppable);
+		return element;
+		
+	}
+});
+Sidebar.Tool.Intersect = Sidebar.Tool.extend({
+	title: "Intersect"
+});
+Sidebar.Tool.Difference = Sidebar.Tool.extend({
+	title: "Difference",
+		wkt1: null,
+	wkt2: null,
+	_droppableText: "Not implemented",
+	afterDrop: function (event, context) {
+		logger.newLog("Difference...");
+		layer = event.toElement.this._layer;
+		var pointLayer = false;
+		if(this.wkt1 == null) {
+			for(key in layer._layers) {
+						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
+							pointLayer = true;
+						break;
+			}
+			if(!pointLayer) {
+				this.wkt1 = WktUtils.layerToWkt(layer);
+			}
+			else {
+				this.wkt1 = WktUtils.pointLayerToWkt(layer);
+			}
+		}
+		else {
+			for(key in layer._layers) {
+						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
+							pointLayer = true;
+						break;
+			}
+			if(!pointLayer) {
+				this.wkt2 = WktUtils.layerToWkt(layer);
+			}
+			else {
+				this.wkt2 = WktUtils.pointLayerToWkt(layer);
+			}
+		}
+		if((this.wkt1 != null) && (this.wkt2 != null)) {
+			var wkts = WktUtils.difference(this.wkt1,this.wkt2);
+			d = wkts.toObject();
+			var color = colors.next();
+				
+			d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+    			});
+			var group = L.featureGroup().addLayer(d);
+			group.fileName = "Intersection";
+			layerlist.addLayer(group, color);
 			this.wkt1 = null;
 			this.wkt2 = null;
-
 		}
+		logger.done();
+
 	},
 	createToolOptions: function () {
 		element = L.DomUtil.create("div", "tool-options");
@@ -339,6 +411,78 @@ Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 		this._distance.value = 100;
 		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
 		element.appendChild(this._distance);
+		this._droppable = L.DomUtil.create('div', 'droppable');
+
+		var con = this;
+		$(this._droppable).droppable({
+			drop: function (event, ui) {
+				con.afterDrop(event, con);
+			}
+		});
+		this._droppable.appendChild(document.createTextNode(this._droppableText));
+		element.appendChild(this._droppable);
+		return element;
+	}
+		
+});
+Sidebar.Tool.Simplify = Sidebar.Tool.extend({
+	title: "Simplify"
+});
+Sidebar.Tool.Overlay = Sidebar.Tool.extend({
+	title: "Intersection",
+	wkt1: null,
+	wkt2: null,
+	_droppableText: "Drop two layers here in succession to intersect them",
+	afterDrop: function (event, context) {
+		layer = event.toElement.this._layer;
+		var pointLayer = false;
+		if(this.wkt1 == null) {
+			for(key in layer._layers) {
+						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
+							pointLayer = true;
+						break;
+			}
+			if(!pointLayer) {
+				this.wkt1 = WktUtils.layerToWkt(layer);
+			}
+			else {
+				this.wkt1 = WktUtils.pointLayerToWkt(layer);
+			}
+		}
+		else {
+			for(key in layer._layers) {
+						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
+							pointLayer = true;
+						break;
+			}
+			if(!pointLayer) {
+				this.wkt2 = WktUtils.layerToWkt(layer);
+			}
+			else {
+				this.wkt2 = WktUtils.pointLayerToWkt(layer);
+			}
+		}
+		if((this.wkt1 != null) && (this.wkt2 != null)) {
+			var wkts = WktUtils.intersect(this.wkt1,this.wkt2);
+			d = wkts.toObject();
+			var color = colors.next();
+				
+			d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+    			});
+			var group = L.featureGroup().addLayer(d);
+			group.fileName = "Difference";
+			layerlist.addLayer(group, color);
+			this.wkt1 = null;
+			this.wkt2 = null;
+		}
+
+	},
+	createToolOptions: function () {
+		element = L.DomUtil.create("div", "tool-options");
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
