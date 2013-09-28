@@ -209,55 +209,66 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		layer = event.toElement.this._layer;
 		 bufferWorker.onmessage = function(evt) {
 		 	console.log("Buffering done");
-		 	var wktsb = evt.data;
-		 	
-		 	if(!dissolve) {
-		 		var color = colors.next();
-				var group = L.featureGroup();
-				group.fileName = layer.fileName+"_buffer"+distance+"m";
-		 		for(var i = 0; i<wktsb.length;i++) {
-		 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
-		 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
-					var d = wktsb[i].toObject();
-					group.addLayer(d);
-					d.setStyle({
-				          opacity:1,
-				          fillOpacity:0.7,
-				          radius:6,
-				          color: color
-	    			});
-				}
-				layerlist.addLayer(group, color);
-				logger.done();
+		 	var queue = evt.data.queue;
+		 	if(queue.length != 0) {
+		 		console.log(queue.length);
+		 		bufferWorker.postMessage(evt.data);
+		 	}
+		 	if(queue.length == 0) {
+		 		wktsb = evt.data.buffers;
+					 	if(!dissolve) {
+					 		var color = colors.next();
+							var group = L.featureGroup();
+							group.fileName = layer.fileName+"_buffer"+distance+"m";
+					 		for(var i = 0; i<wktsb.length;i++) {
+					 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
+					 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
+								var d = wktsb[i].toObject();
+								group.addLayer(d);
+								d.setStyle({
+							          opacity:1,
+							          fillOpacity:0.7,
+							          radius:6,
+							          color: color
+				    			});
+							}
+							layerlist.addLayer(group, color);
+							logger.done();
 
+					 	}
+					 	else {
+					 		for(var i = 0; i<wktsb.length;i++) {
+					 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
+					 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
+					 			wktsb[i] = wktsb[i].write();
+					 		}
+					 		dissolveWorker.postMessage(wktsb);
+					 	}
+					 	
 		 	}
-		 	else {
-		 		for(var i = 0; i<wktsb.length;i++) {
-		 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
-		 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
-		 			wktsb[i] = wktsb[i].write();
-		 		}
-		 		dissolveWorker.postMessage(wktsb);
-		 	}
-		 	
-		 	
 
 		  };
 		  dissolveWorker.onmessage = function (evt) {
-		  	console.log(evt);
-		  	var color = colors.next();
-			var group = L.featureGroup();
-			group.fileName = layer.fileName+"_buffer"+distance+"m";
-		  	var d = new Wkt.Wkt(evt.data).toObject().addTo(layer._map);
-		  	group.addLayer(d);
-			d.setStyle({
-		          opacity:1,
-		          fillOpacity:0.7,
-		          radius:6,
-		          color: color
-			});
-			layerlist.addLayer(group, color);
-			logger.done();
+		  	console.log(evt.data.length);
+		  	if(evt.data.length != 1) {
+		  		dissolveWorker.postMessage(evt.data);
+		  	}
+		  	else if(evt.data.length == 1) {
+		  		var buffer = evt.data[0];
+			  	var color = colors.next();
+				var group = L.featureGroup();
+				group.fileName = layer.fileName+"_buffer"+distance+"m";
+			  	var d = new Wkt.Wkt(buffer).toObject().addTo(layer._map);
+			  	group.addLayer(d);
+				d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+				});
+				layerlist.addLayer(group, color);
+				logger.done();
+			}
 		  };
 		for(key in layer._layers) {
 					if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
@@ -275,7 +286,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
 			wkts[i] = wkts[i].write();
 		}
-		bufferWorker.postMessage({wkt: wkts, dist: distance});
+		bufferWorker.postMessage({buffers:[], queue: wkts, dist: distance});
 		/*setTimeout(function () {
 		wkts = WktUtils.buffer(wkts, distance);
 		var color = colors.next();

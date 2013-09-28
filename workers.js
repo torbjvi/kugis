@@ -6,11 +6,12 @@ onmessage = function(evt) {
   
   var reader = new jsts.io.WKTReader();
   var parser =  new jsts.io.WKTParser();
-  var wkts = evt.data.wkt;
-  for(var i = 0;i<wkts.length;i++) { 
-    var input = reader.read(wkts[i]);
+  var wkts = evt.data.queue;
+  var buffers = evt.data.buffers;
+  
+    var input = reader.read(wkts.shift());
     var buffer = input.buffer(evt.data.dist);
-    wkts[i] = parser.write(buffer);
-  }
-  postMessage(wkts);
+    buffers.push(parser.write(buffer));
+  
+  postMessage({buffers: buffers, queue: wkts, dist: evt.data.dist});
 }
