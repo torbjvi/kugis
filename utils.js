@@ -53,6 +53,19 @@ var WktUtils = {};
 		 }
 		return e;
 	};
+	WktUtils.simplify = function (c) {
+		 if(Array.isArray(c)) {
+		 	var e = [];
+		 	for(var i = 0; i<c.length;i++) {
+		 		e.push(WktUtils.transformWktComponentsToWebMercator(c[i]));
+		 	}
+		 }
+		 else {
+		 	return c;
+		 }
+		return L.LineUtil.simplify(e, 20);
+
+	};
 	WktUtils.buffer = function (wkts, distance) {
 	if(!Array.isArray(wkts)) {
 		var wkts = [wkts];
