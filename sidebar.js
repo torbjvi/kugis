@@ -206,7 +206,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
-		layer = event.toElement.this._layer;
+		layer = event.draggable[0].this._layer;
 		 bufferWorker.onmessage = function(evt) {
 		 	var queue = evt.data.queue;
 		 	logger.step();
@@ -281,11 +281,21 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		else {
 			wkts = WktUtils.pointLayerToWkt(layer);
 		}
+		if(dissolve) {
+			logger.newLog("Buffer",false, false);
+			var wkt = wkts[0];
+			for(var i = 1; i<wkts.length;i++)
+				wkt.merge(wkts[i]);
+			wkts = [wkt];
+		}
+		else {
+			logger.newLog("Buffer", wkts.length, 0);
+		}
 		for(var i = 0;i<wkts.length;i++) {
 			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
 			wkts[i] = wkts[i].write();
 		}
-		logger.newLog("Buffer", wkts.length, 0);
+		
 		bufferWorker.postMessage({buffers:[], queue: wkts, dist: distance});
 		/*setTimeout(function () {
 		wkts = WktUtils.buffer(wkts, distance);
@@ -344,7 +354,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(event, con);
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));
@@ -361,7 +371,7 @@ Sidebar.Tool.BufferRings = Sidebar.Tool.extend({
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
-		layer = event.toElement.this._layer;
+		layer = event.draggable[0].this._layer;
 		var filename = layer.fileName;
 		var layers = [];
 		for(var i = 0; i<context._rings.value; i++) {
@@ -428,7 +438,7 @@ Sidebar.Tool.BufferRings = Sidebar.Tool.extend({
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(event, con);
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));
@@ -447,7 +457,8 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 	_droppableText: "Drop two layers here in succession to \"differ\" them",
 	afterDrop: function (event, context) {
 		logger.newLog("Difference...");
-		layer = event.toElement.this._layer;
+		console.log(event);
+		layer = event.draggable[0].this._layer;
 		var pointLayer = false;
 		if(this.wkt1 == null) {
 			for(key in layer._layers) {
@@ -502,7 +513,7 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(event, con);
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));
@@ -514,11 +525,50 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 	title: "Simplify",
 	afterDrop: function (event, context) {
-		layer = event.toElement.this._layer;
-		var origSum = 0;
+		console.log(event);
+		layer = event.draggable[0].this._layer;
+		var tolereance = this._distance.value;
+		var group = L.featureGroup();
+			var color = colors.next();
+			var style = {
+		          opacity:1,
+		          fillOpacity:0.7,
+		          radius:6,
+		          color: color
+			};
+			group.fileName = layer.fileName+"_s";
+		layer.eachLayer(function (l) {
+			var latlngs = l.getLatLngs();
+			var coords = [];
+			for(var i=0;i<latlngs.length;i++) {
+				coords.push({y: latlngs[i].lat, x: latlngs[i].lng});
+			}
+			//console.log(coords.length);
+
+			var coords = L.LineUtil.simplify(coords,tolereance);
+			//console.log(coords.length);
+			for(var i = 0;i<coords.length;i++) {
+				coords[i] = new L.LatLng(coords[i].y, coords[i].x);
+			}
+			var type = l.feature.geometry.type;
+			switch (type) {
+				case "Polygon":
+					var d = L.polygon(coords);
+					break;
+				case "LineString":
+					var d = L.polyline(coords);
+			}
+
+
+			d.setStyle(style);
+			group.addLayer(d);
+
+
+		});
+		layerlist.addLayer(group, color);
+		/*var origSum = 0;
 		var newSum = 0;
 		var wkts = WktUtils.layerToWkt(layer);
-		var color = colors.next();
 				
 		var style = {
 		          opacity:1,
@@ -540,7 +590,7 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 		group.fileName = layer.fileName+"_s";
 		layerlist.addLayer(group,color);
 		console.log(origSum);
-		console.log(newSum);
+		console.log(newSum);*/
 
 
 	},
@@ -549,17 +599,17 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 		element = L.DomUtil.create("div", "tool-options");
 		element.appendChild(document.createTextNode("Tolerance: "));
 		this._distance = L.DomUtil.create("input", "buffer-distance");
-		this._distance.value = 100;
+		this._distance.value = 0.001;
 		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
 		element.appendChild(this._distance);
-		element.appendChild(document.createTextNode(" m"));
+		element.appendChild(document.createTextNode(" deg"));
 
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(event, con);
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));
@@ -573,7 +623,7 @@ Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 	wkt2: null,
 	_droppableText: "Drop two layers here in succession to intersect them",
 	afterDrop: function (event, context) {
-		layer = event.toElement.this._layer;
+		layer = event.draggable[0].this._layer;
 		var pointLayer = false;
 		if(this.wkt1 == null) {
 			for(key in layer._layers) {
@@ -627,7 +677,7 @@ Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(event, con);
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));

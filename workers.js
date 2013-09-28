@@ -1,5 +1,5 @@
-importScripts('javascript.util.js'); 
-importScripts('jsts.js'); 
+importScripts('javascript.util.js', 'jsts.js'); 
+
 
 onmessage = function(evt) {
 
