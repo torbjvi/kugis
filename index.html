@@ -390,8 +390,7 @@ var basemapselector;
 var map;
 var defaultLayer = L.tileLayer.provider('Acetate');
 var logger;
-var bufferWorker = new Worker('workers.js');
-var dissolveWorker = new Worker('dissolve.js');
+var bufferWorker, dissolveWorker;
 var sidebar;
 function init() {
   var map = L.map("map",
@@ -418,7 +417,7 @@ basemapselector.hide();
   //tools.addTool(new Sidebar.Tool.BufferRings(map, toolColors.next()));
 
   tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
-  
+
   tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
   /*
@@ -446,11 +445,7 @@ basemapselector.hide();
 </script>
 
  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
- <script src='attache.array.min.js'></script>
- <script src='javascript.util.js'></script>;
- <script src='jsts.js'></script>
  <script src="logger.js"></script>
- <script src="operative.min.js"></script>
  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
 </body>

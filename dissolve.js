@@ -1,3 +1,4 @@
+var javascript = {};
 importScripts('javascript.util.js'); 
 importScripts('jsts.js'); 
 
