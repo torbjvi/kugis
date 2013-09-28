@@ -34,13 +34,25 @@ var Logger = L.Class.extend({
   		this.element = element;
 
 	},
-	newLog: function (title) {
+	i:0,
+	newLog: function (title, sum, value) {
+		if(value == null)
+			value = false;
+		else {
+			value = 0;
+		}
+		this.sum = sum;
 		$(this.element).show();
 		this.titleField.innerHTML = title;
 		$(this.progressbar).progressbar({
-      		value: false
+      		value: 0
   		 });
 		
+	},
+	step: function() {
+		this.i++;
+		var perc = ((this.i/this.sum)*100);
+		$(this.progressbar).progressbar("value", perc);
 	},
 	done: function () {
 		$(this.element).hide();

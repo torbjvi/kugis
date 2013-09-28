@@ -201,17 +201,16 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		var message = "test";
 		bufferWorker = new Worker('workers.js');
 		dissolveWorker = new Worker('dissolve.js');
-		logger.newLog("Buffer");
+		
 		dissolve = this._dissolve.checked;
 		console.log("Drop");
 		var pointLayer = false;
 		var distance = context._distance.value;
 		layer = event.toElement.this._layer;
 		 bufferWorker.onmessage = function(evt) {
-		 	console.log("Buffering done");
 		 	var queue = evt.data.queue;
+		 	logger.step();
 		 	if(queue.length != 0) {
-		 		console.log(queue.length);
 		 		bufferWorker.postMessage(evt.data);
 		 	}
 		 	if(queue.length == 0) {
@@ -286,6 +285,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
 			wkts[i] = wkts[i].write();
 		}
+		logger.newLog("Buffer", wkts.length, 0);
 		bufferWorker.postMessage({buffers:[], queue: wkts, dist: distance});
 		/*setTimeout(function () {
 		wkts = WktUtils.buffer(wkts, distance);
@@ -512,7 +512,60 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 		
 });
 Sidebar.Tool.Simplify = Sidebar.Tool.extend({
-	title: "Simplify"
+	title: "Simplify",
+	afterDrop: function (event, context) {
+		layer = event.toElement.this._layer;
+		var origSum = 0;
+		var newSum = 0;
+		var wkts = WktUtils.layerToWkt(layer);
+		var color = colors.next();
+				
+		var style = {
+		          opacity:1,
+		          fillOpacity:0.7,
+		          radius:6,
+		          color: color
+			};
+		var group = L.featureGroup(); 
+		for(var i = 0; i<wkts.length; i++) {
+			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
+			var origSum = origSum+wkts[i].components.length;
+			wkts[i].components = L.LineUtil.simplify(wkts[i].components, this._distance.value);
+			var newSum = newSum+wkts[i].components.length;
+			wkts[i].components = WktUtils.transformWktToWGS84(wkts[i].components);
+			var d = wkts[i].toObject();
+			d.setStyle(style);
+			group.addLayer(d);
+		}
+		group.fileName = layer.fileName+"_s";
+		layerlist.addLayer(group,color);
+		console.log(origSum);
+		console.log(newSum);
+
+
+	},
+	createToolOptions: function () {
+		element = L.DomUtil.create("div", "tool-options");
+		element = L.DomUtil.create("div", "tool-options");
+		element.appendChild(document.createTextNode("Tolerance: "));
+		this._distance = L.DomUtil.create("input", "buffer-distance");
+		this._distance.value = 100;
+		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
+		element.appendChild(this._distance);
+		element.appendChild(document.createTextNode(" m"));
+
+		this._droppable = L.DomUtil.create('div', 'droppable');
+
+		var con = this;
+		$(this._droppable).droppable({
+			drop: function (event, ui) {
+				con.afterDrop(event, con);
+			}
+		});
+		this._droppable.appendChild(document.createTextNode(this._droppableText));
+		element.appendChild(this._droppable);
+		return element;
+	}
 });
 Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 	title: "Intersection",
