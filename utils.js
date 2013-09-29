@@ -141,3 +141,14 @@ var WktUtils = {};
 		var parser = new jsts.io.WKTParser();
 		return new Wkt.Wkt(parser.write(intersect));
 	}
+	L.Util.clone = function (o){
+	  if(o == null || typeof(o) != 'object')
+	    return o;
+
+	  var c = new o.constructor();
+	  //Deep clone recursively
+	  for(var k in o)
+	    c[k] = L.Util.clone(o[k]);
+
+	  return c;
+}; 

@@ -204,6 +204,26 @@ li.logger-list {
   bottom: 5px;
   width: 165px !important;
 }
+div.feature-extractor {
+  position: fixed;
+  left: 70px;
+  top: 20px;
+  width: 500px;
+  background-color: rgb(52, 73, 94);
+  color: white;
+  padding: 10px;
+}
+li.feature-extractor .header {
+  font-size: 20px;
+  font-weight: bold;
+  height: 22px;
+}
+select.feature-extractor {
+  width: 30%;
+}
+input.feature-extractor {
+  width: 30% !important;
+}
     </style>
 
 
@@ -393,8 +413,9 @@ var logger;
 var bufferWorker = new Worker('workers.js');
 var dissolveWorker = new Worker('dissolve.js');
 var sidebar;
+var map;
 function init() {
-  var map = L.map("map",
+  map = L.map("map",
     {
       zoomControl:true,
       center: [58.1467938592621, 7.9959869384765625],
@@ -421,6 +442,7 @@ basemapselector.hide();
   
   tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.FeatureExtractor(map, toolColors.next()));
   /*
   tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
@@ -450,6 +472,7 @@ basemapselector.hide();
  <script src='javascript.util.js'></script>;
  <script src='jsts.js'></script>
  <script src="logger.js"></script>
+  <script src="Featureextractor.js"></script>
  <script src="operative.min.js"></script>
  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 

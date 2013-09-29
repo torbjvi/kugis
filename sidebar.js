@@ -13,6 +13,7 @@ var Sidebar = L.Class.extend({
 		return this._element;
 	} 
 });
+
 Sidebar.LayerList = L.Class.extend({
 	initialize: function (map) {
 		this._container = L.DomUtil.create('ul', '');
@@ -114,6 +115,11 @@ Sidebar.LayerList.Button = L.Class.extend({
 		layer.addTo(map);
 		this._element = L.DomUtil.create("li", "layerlist-layer ui-state-default layerbutton");
 		this._element.this = this;
+		for(key in layer._layers) {
+			var l = layer._layers[key];
+			this.type = l.toGeoJSON().geometry.type;
+			break;
+		}
 		/*var sublist = L.DomUtil.create("ul", "layerlist-sublist");
 		this._element.appendChild(sublist);
 		var sublistItem = L.DomUtil.create("li", "layerlist-layer-name");
@@ -123,14 +129,40 @@ Sidebar.LayerList.Button = L.Class.extend({
 		sublist.appendChild(sublistItem);
 		var properties = L.DomUtil.create("li", "layerlist-layer-properties");
 		*/
-		this._element.style.borderLeft="10px solid "+color;
-		this._element.appendChild(document.createTextNode(layer.fileName));
+		this._element.title = layer.fileName;
+		this._element.appendChild(this.getIcon(color));
+		var layerTrunc = layer.fileName.substr(0,6);
+		this._element.appendChild(document.createTextNode(" "+layerTrunc));
 
 		this._checkIcon = L.DomUtil.create("i","icon-check-sign pull-right checkmark");
-
+		this._trash = L.DomUtil.create("i","icon-trash pull-right checkmark");
 		L.DomEvent.addListener(this._checkIcon, "click", this.toggleLayer, this);
+		L.DomEvent.addListener(this._trash, "click", this.remove, this);
 		this._element.appendChild(this._checkIcon);
 		this._element.appendChild(L.DomUtil.create("i","icon-cogs pull-right checkmark"));
+		this._element.appendChild(this._trash);
+	},
+	getIcon: function (color) {
+		var type;
+		console.log(this._layer);
+		console.log(this.type);
+		var iconClass = "icon-circle";
+		switch (this.type) {
+			case "LineString":
+			iconClass = "icon-minus";
+			break;
+			case "Polygon":
+			iconClass = "icon-sign-blank"
+			break;
+
+		}
+		var icon = L.DomUtil.create("i", iconClass);
+		icon.style.color = color;
+		return icon;
+	},
+	remove: function() {
+		this._map.removeLayer(this._layer);
+		$(this._element).remove();
 	},
 	toggleLayer: function() {
 		if(this._map.hasLayer(this._layer)) {
@@ -210,6 +242,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		 bufferWorker.onmessage = function(evt) {
 		 	var queue = evt.data.queue;
 		 	logger.step();
+		 	console.log("message");
 		 	if(queue.length != 0) {
 		 		bufferWorker.postMessage(evt.data);
 		 	}
@@ -218,6 +251,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 					 	if(!dissolve) {
 					 		var color = colors.next();
 							var group = L.featureGroup();
+							
 							group.fileName = layer.fileName+"_buffer"+distance+"m";
 					 		for(var i = 0; i<wktsb.length;i++) {
 					 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
@@ -524,6 +558,7 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 });
 Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 	title: "Simplify",
+	_droppableText: "Drop a layer here to generalize it.",
 	afterDrop: function (event, context) {
 		console.log(event);
 		layer = event.draggable[0].this._layer;
@@ -688,6 +723,30 @@ Sidebar.Tool.Overlay = Sidebar.Tool.extend({
 });
 Sidebar.Tool.Distance = Sidebar.Tool.extend({
 	title: "Distance"
+});
+Sidebar.Tool.FeatureExtractor = Sidebar.Tool.extend({
+	title: "FeatureExtractor",
+	_droppableText: "Drop a layer here to start extracting features",
+	createToolOptions: function () {
+		element = L.DomUtil.create("div", "tool-options");
+		this._droppable = L.DomUtil.create('div', 'droppable');
+
+		var con = this;
+		$(this._droppable).droppable({
+			drop: function (event, ui) {
+				Sidebar.Tool.FeatureExtractor.prototype.afterDrop.call(con, ui);
+			}
+		});
+		this._droppable.appendChild(document.createTextNode(this._droppableText));
+		element.appendChild(this._droppable);
+		return element;
+		
+	},
+	afterDrop: function (event, context) {
+		var layer = event.draggable[0].this._layer;
+		new FeatureExtractor(layer);
+
+	},
 });
 Sidebar.Tool.Centroid = Sidebar.Tool.extend({
 	title: "Centroid"
