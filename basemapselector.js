@@ -35,6 +35,7 @@ var BasemapSelector = L.Class.extend({
 		
 		this._map = map;
 		this._container = L.DomUtil.create('div', 'basemap-selector');
+		$(this._container).hide();
 		for(layerName in this.baseMaps) {
 			this.baseLayers.push(new Basemap(layerName, this.baseMaps[layerName], map));
 		}

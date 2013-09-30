@@ -5,7 +5,7 @@ var FeatureExtractor = L.Class.extend({
 			var firstLayer = layer._layers[key];
 			break;
 		}
-		this.fields = ["calculated area"];
+		this.fields = [];
 		if(firstLayer.feature != null && firstLayer.feature.properties != null) {
 			for(key in firstLayer.feature.properties) {
 				this.fields.push(key);
@@ -32,19 +32,34 @@ var FeatureExtractor = L.Class.extend({
 		addRule.innerHTML = "Add rule";
 		var execute = L.DomUtil.create("button", "feature-extractor");
 		execute.innerHTML = "Extract";
+		var close = L.DomUtil.create("button", "feature-extractor");
+		close.innerHTML = "Close";
+		this.nameField = L.DomUtil.create("input", "field-extractor");
+		this.nameField.value = "ex_"+this._layer.fileName;
 		list.appendChild(li2);
+		li2.appendChild(document.createTextNode("Name of new layer: "));
+
+		li2.appendChild(this.nameField);
 		li2.appendChild(execute);
 		L.DomEvent.addListener(execute, "click", this.execute, this);
 		L.DomEvent.addListener(addRule, "click", this.addRuleField, this);
+		L.DomEvent.addListener(close, "click", this.close, this);
 		li2.appendChild(addRule);
-		
+		li2.appendChild(close);
 		
 	},
 	uniques: {
 
 	},
+	close: function () {
+		$(this.element).remove();
+		this = {};
+	},
 	addRuleField: function () {
 		var li = L.DomUtil.create("li", "feature-extractor rule");
+		var trash = L.DomUtil.create("button", "feature-extractor");
+		trash.appendChild(L.DomUtil.create("i", "icon-trash"));
+		li.appendChild(trash);
 		li.field = this.createFieldSelector();
 		li.operation = this.createEqualSelector();
 		li.appendChild(li.field);
@@ -52,16 +67,19 @@ var FeatureExtractor = L.Class.extend({
 		li.fieldValue = L.DomUtil.create("input", "field-extractor");
 		li.appendChild(li.fieldValue);
 		this.ruleList.appendChild(li);
-		var button = L.DomUtil.create("button", "field-extractor");
+		var button = L.DomUtil.create("button", "feature-extractor");
 		button.appendChild(document.createTextNode("u"));
 		li.appendChild(button);
 		var li;
 		var getUniqueValues = this.getUniqueValues;
 		var layer = this._layer;
 		button.onclick  = function (event) {
-			$(li.fieldValue).remove();
-			li.fieldValue = getUniqueValues(li.field.value, layer);
-			li.appendChild(li.fieldValue);
+			var uniqueFields =  getUniqueValues(li.field.value, layer);
+			$(li.fieldValue).replaceWith(uniqueFields);
+			li.fieldValue = uniqueFields;
+		}
+		trash.onclick = function (event) {
+			$(li).remove();
 		}
 
 	},
@@ -118,7 +136,7 @@ var FeatureExtractor = L.Class.extend({
 			rules.push({field: ruleList.childNodes[i].field.value, operation: ruleList.childNodes[i].operation.value, fieldValue: ruleList.childNodes[i].fieldValue.value});
 		}
 		var group = L.featureGroup();
-		group.fileName = "extract";
+		group.fileName = this.nameField.value;
 		var color = colors.next();
 		this._layer.eachLayer(function (l) {
 			var result = true;
