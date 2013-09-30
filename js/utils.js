@@ -2,9 +2,13 @@ var WktUtils = {};
 	WktUtils.layerToWkt = function (layer) {
 		var wkts = [];
 		layer.eachLayer(function (l) {
-				var wkt = new Wkt.Wkt();
-				wkt.fromObject(l);
-				wkts.push(wkt);
+				try {
+					var wkt = new Wkt.Wkt();
+					wkt.fromObject(l);
+					wkts.push(wkt);
+				} catch (err) {
+					map.removeLayer(l);
+				}
 		});
 		return wkts;
 	

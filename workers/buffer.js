@@ -1,4 +1,4 @@
-importScripts('javascript.util.js', 'jsts.js'); 
+importScripts('../libs/javascript.util.js', '../libs/jsts.js'); 
 
 
 onmessage = function(evt) {

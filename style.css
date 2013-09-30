@@ -1,0 +1,240 @@
+html { 
+    height: 100% 
+  }
+  body { 
+    height: 100%; margin: 0; padding: 0;
+    background-color: #34495e;
+  }
+  
+  
+  .upStuff{
+  	display:none;
+  }
+      .fill {
+  position: fixed;
+  left: 0;
+  right: 200px;
+  top: 0;
+  bottom: 0;
+}
+.basemap-selector {
+  position: fixed;
+  top: 0;
+  bottom:0;
+  right: 200px;
+  width: 0px;
+  overflow-x: hidden;
+  background: none;
+  opacity: 0.9;
+}
+.basemap-selector-inner {
+  width: 3503px;
+}
+.basemap-selected {
+  border-color: #27ae60 !important;
+}
+.basemap-preview {
+  background: none;
+  border: none;
+  padding-bottom: 15px;
+}
+.basemap-preview-img {
+  width: 63px;
+  border-color: white;
+  border-width: 5px;
+  border-radius: 2.5px;
+  border-style: solid;
+
+}
+.title {
+vertical-align: 20px;
+font-size: 20px;
+font-weight: bold;
+}
+.logo {
+  margin-left: 50px;
+  width: 80px;
+}
+.border-blue {
+  border-color: blue;
+}
+form {
+  display: inline;
+}
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 200px;
+  margin: 0;
+  padding: 0;
+  color: white;
+  vertical-align: center;
+  font-size: 10px !important;
+}
+.layerbutton {
+    padding-left: 3px;
+    margin: 0px;
+    background-color: rgb(52, 73, 94);
+    border: medium none;
+    width: 100%;
+    text-align: left;
+    color: white;
+    box-shadow: 5px 5px rgb(44, 62, 80);
+    position: relative;
+    left: -5px;
+    margin-top: 5px;
+    cursor: move;
+}
+.layerlist-header {
+    margin: 0px;
+    background-color: rgb(52, 73, 94);
+    border: medium none;
+    width: 100%;
+    text-align: left;
+    color: white;
+    box-shadow: 15px 5px rgb(44, 62, 80);
+    position: relative;
+    font-weight: bold;
+    margin-top: 5px;
+    cursor: pointer;
+    padding: 7px;
+    left: -15px;
+}
+input {
+  width: 40px;
+  display: inline;
+  text-align: right;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.coloricon {
+margin-right: 10px;
+padding: 1px;
+}
+.checkmark {
+  margin-right: 15px;
+padding: 1px;
+cursor: pointer;
+}
+.tool {
+  padding-left: 10px;
+}
+.droppable {
+  width: 155px;
+  border-color: white;
+  border-style: dashed;
+  border-width: 5px;
+  padding: 8px;
+  margin:5px;
+  text-align: center;
+  vertical-align: middle;
+  opacity: 0.6;
+  border-radius: 5px;
+
+}
+.logger {
+  z-index: 700000;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 100px;
+  background: none;
+  opacity: 1
+}
+ul.logger-list {
+  position: relative;
+height: 80px;
+width: 400px;
+opacity: 0.9;
+margin: auto;
+background-color: rgb(52, 73, 94);;
+    box-shadow: 15px 15px rgb(44, 62, 80);
+    color: white;
+
+}
+li.logger-list {
+  position: relative;
+  margin: 0px;
+  
+}
+.logger-header {
+  height: 40%;
+  font-weight: bold;
+  font-size: 2em;
+  margin-top: 10px;
+  text-align: center;
+}
+.logger-progressbar {
+  bottom: 0px;
+  height: 60%;
+}
+.logger-messages {
+  top: 40px;
+  bottom: 80px;
+  background-color: #95a5a6;
+  overflow-y: auto;
+}
+#progressbar {
+  background-color: black;
+  width: 100%;
+  height: 90%;
+  position: relative;
+}
+.file-dropper {
+  position: absolute;
+  bottom: 5px;
+  width: 165px !important;
+}
+div.feature-extractor {
+  position: fixed;
+  left: 70px;
+  top: 20px;
+  width: 500px;
+  background-color: rgb(52, 73, 94);
+  color: white;
+  padding: 10px;
+  box-shadow: 10px 10px rgba(44, 62, 80, 0.7);
+}
+li.feature-extractor .header {
+  font-size: 20px;
+  font-weight: bold;
+  height: 22px;
+}
+select.feature-extractor {
+  width: 30%;
+}
+input.field-extractor {
+display: inline-block;
+height: 30px;
+padding: 4px 6px;
+margin-bottom: 10px;
+font-size: 14px;
+line-height: 20px;
+color: #555555;
+-webkit-border-radius: 4px;
+-moz-border-radius: 4px;
+border-radius: 4px;
+vertical-align: middle;
+border: 1px solid #cccccc;
+background-color: #ffffff;
+width: 30%;
+}
+button.feature-extractor {
+  display: inline-block;
+height: 30px;
+padding: 4px 6px;
+margin-bottom: 10px;
+font-size: 14px;
+line-height: 20px;
+color: #555555;
+-webkit-border-radius: 4px;
+-moz-border-radius: 4px;
+border-radius: 4px;
+vertical-align: middle;
+border: 1px solid #cccccc;
+}

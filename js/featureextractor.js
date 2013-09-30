@@ -53,7 +53,7 @@ var FeatureExtractor = L.Class.extend({
 	},
 	close: function () {
 		$(this.element).remove();
-		this = {};
+		//this = {};
 	},
 	addRuleField: function () {
 		var li = L.DomUtil.create("li", "feature-extractor rule");
