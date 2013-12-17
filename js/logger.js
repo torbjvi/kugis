@@ -1,5 +1,5 @@
-var Logger = L.Class.extend({
-	initialize: function () {
+var Logger = L.Class.extend({ // simple class for crating and updating a progressbar that show the remaining steps of the analalysis
+	initialize: function () { 
 	  	var element = L.DomUtil.create("div", "logger");
 	  	var list = L.DomUtil.create("ul", "logger-list");
 	  	this.titleField = L.DomUtil.create("li", "logger-header logger-list");

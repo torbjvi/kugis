@@ -41,31 +41,6 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 
 		});
 		layerlist.addLayer(group, color);
-		/*var origSum = 0;
-		var newSum = 0;
-		var wkts = WktUtils.layerToWkt(layer);
-				
-		var style = {
-		          opacity:1,
-		          fillOpacity:0.7,
-		          radius:6,
-		          color: color
-			};
-		var group = L.featureGroup(); 
-		for(var i = 0; i<wkts.length; i++) {
-			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
-			var origSum = origSum+wkts[i].components.length;
-			wkts[i].components = L.LineUtil.simplify(wkts[i].components, this._distance.value);
-			var newSum = newSum+wkts[i].components.length;
-			wkts[i].components = WktUtils.transformWktToWGS84(wkts[i].components);
-			var d = wkts[i].toObject();
-			d.setStyle(style);
-			group.addLayer(d);
-		}
-		group.fileName = layer.fileName+"_s";
-		layerlist.addLayer(group,color);
-*/
-
 
 	},
 	createToolOptions: function () {

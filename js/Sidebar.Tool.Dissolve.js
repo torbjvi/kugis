@@ -66,40 +66,6 @@ Sidebar.Tool.Dissolve = Sidebar.Tool.extend({
 		}
 		
 		dissolveWorker.postMessage({polygon:null, queue: wkts});
-		/*setTimeout(function () {
-		wkts = WktUtils.buffer(wkts, distance);
-		var color = colors.next();
-		var group = L.featureGroup();
-		if(dissolve) {
-			var pass = WktUtils.dissolve(wkts);
-			var d = pass.toObject();
-			d.setStyle({
-			          opacity:1,
-			          fillOpacity:0.7,
-			          radius:6,
-			          color: color
-    			});
-			
-			group.addLayer(d);
-		}
-		else {
-			for(var i = 0; i<wkts.length;i++) {
-				var d = wkts[i].toObject();
-				group.addLayer(d);
-				d.setStyle({
-			          opacity:1,
-			          fillOpacity:0.7,
-			          radius:6,
-			          color: color
-    			});
-			
-			}
-		}
-			
-			
-			group.fileName = layer.fileName+"_buffer"+distance+"m";
-			layerlist.addLayer(group, color);
-		}, 5000);*/
 	},
 
 	createToolOptions: function () {

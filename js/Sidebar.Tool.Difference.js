@@ -1,6 +1,6 @@
 Sidebar.Tool.Difference = Sidebar.Tool.extend({
 	title: "Difference",
-		wkt1: null,
+	wkt1: null,
 	wkt2: null,
 	_droppableText: "Drop a layer here, then drop the layer you want to subtract from it",
 	afterDrop: function (event, context) {
