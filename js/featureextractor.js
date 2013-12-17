@@ -130,7 +130,6 @@ var FeatureExtractor = L.Class.extend({
 	execute: function () {
 		var featureGroup = this._layer;
 		var ruleList = this.ruleList;
-		console.log(ruleList);
 		var rules = [];
 		for(var i = 0; i<ruleList.childElementCount; i++) {
 			rules.push({field: ruleList.childNodes[i].field.value, operation: ruleList.childNodes[i].operation.value, fieldValue: ruleList.childNodes[i].fieldValue.value});

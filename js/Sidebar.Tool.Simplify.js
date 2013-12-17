@@ -3,7 +3,6 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 	_droppableText: "Drop a layer here to generalize it.",
 	afterDrop: function (event, context) {
 		this.toggleOptions();
-		console.log(event);
 		layer = event.draggable[0].this._layer;
 		var tolereance = this._distance.value;
 		var group = L.featureGroup();
@@ -21,10 +20,8 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 			for(var i=0;i<latlngs.length;i++) {
 				coords.push({y: latlngs[i].lat, x: latlngs[i].lng});
 			}
-			//console.log(coords.length);
 
 			var coords = L.LineUtil.simplify(coords,tolereance);
-			//console.log(coords.length);
 			for(var i = 0;i<coords.length;i++) {
 				coords[i] = new L.LatLng(coords[i].y, coords[i].x);
 			}
@@ -67,8 +64,7 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 		}
 		group.fileName = layer.fileName+"_s";
 		layerlist.addLayer(group,color);
-		console.log(origSum);
-		console.log(newSum);*/
+*/
 
 
 	},

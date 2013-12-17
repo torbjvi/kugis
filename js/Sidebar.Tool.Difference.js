@@ -2,11 +2,10 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 	title: "Difference",
 		wkt1: null,
 	wkt2: null,
-	_droppableText: "Drop two layers here in succession to \"differ\" them",
+	_droppableText: "Drop a layer here, then drop the layer you want to subtract from it",
 	afterDrop: function (event, context) {
-		this.toggleOptions();
+		
 		logger.newLog("Difference...");
-		console.log(event);
 		layer = event.draggable[0].this._layer;
 		var pointLayer = false;
 		if(this.wkt1 == null) {
@@ -36,6 +35,7 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 			}
 		}
 		if((this.wkt1 != null) && (this.wkt2 != null)) {
+			this.toggleOptions();
 			var wkts = WktUtils.difference(this.wkt1,this.wkt2);
 			d = wkts.toObject();
 			var color = colors.next();
@@ -47,7 +47,7 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 			          color: color
     			});
 			var group = L.featureGroup().addLayer(d);
-			group.fileName = "Intersection";
+			group.fileName = "Difference";
 			layerlist.addLayer(group, color);
 			this.wkt1 = null;
 			this.wkt2 = null;

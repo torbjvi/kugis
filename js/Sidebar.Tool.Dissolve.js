@@ -1,30 +1,32 @@
-Sidebar.Tool.Buffer = Sidebar.Tool.extend({
-	title: "Buffer",
-	_droppableText: "Drop a layer here to buffer!",
+Sidebar.Tool.Dissolve = Sidebar.Tool.extend({
+	title: "Dissolve",
+	_droppableText: "Drop a layer here to Dissolve it!",
 	afterDrop: function (event, context) {
 		this.toggleOptions();
 		var message = "test";
-		bufferWorker = new Worker('workers/buffer.js');
 		dissolveWorker = new Worker('workers/dissolve.js');
-		var pointLayer = false;
-		var distance = context._distance.value;
 		layer = event.draggable[0].this._layer;
-		 bufferWorker.onmessage = function(evt) {
+		 this.execute(layer);
+
+	},
+	execute: function (layer) {
+		var pointLayer = false;
+		dissolveWorker.onmessage = function(evt) {
+
 		 	var queue = evt.data.queue;
 		 	logger.step();
 		 	if(queue != 0) {
-		 		bufferWorker.postMessage(evt.data);
+		 		dissolveWorker.postMessage(evt.data);
 		 	}
 		 	if(queue == 0) {
-		 					wktsb = evt.data.buffers;
+		 		wktsb = [evt.data.polygon];
 					 	
 					 		var color = colors.next();
 							var group = L.featureGroup();
 							
-							group.fileName = layer.fileName+"_buffer"+distance+"m";
+							group.fileName = layer.fileName+"_dissolved";
 					 		for(var i = 0; i<wktsb.length;i++) {
 					 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
-					 			wktsb[i].components = WktUtils.transformWktToWGS84(wktsb[i].components);
 								var d = wktsb[i].toObject();
 								group.addLayer(d);
 								d.setStyle({
@@ -34,15 +36,11 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 							          color: color
 				    			});
 							}
-							dissolve = true;
+							layerlist.addLayer(group, color);
 							logger.done();
 							logger = new Logger();
-				if(!dissolve) {
-							layerlist.addLayer(group, color);
-				}
-				else{
-					Sidebar.Tool.Dissolve.prototype.execute(group);
-				}
+
+				
 					 	
 		 	}
 
@@ -61,23 +59,51 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 			wkts = WktUtils.pointLayerToWkt(layer);
 		}
 
-			logger.newLog("Buffer", wkts.length, 0);
+			logger.newLog("Dissolving", wkts.length, 0);
 		for(var i = 0;i<wkts.length;i++) {
-			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
+			
 			wkts[i] = wkts[i].write();
 		}
 		
-		bufferWorker.postMessage({buffers:[], queue: wkts, dist: distance});
+		dissolveWorker.postMessage({polygon:null, queue: wkts});
+		/*setTimeout(function () {
+		wkts = WktUtils.buffer(wkts, distance);
+		var color = colors.next();
+		var group = L.featureGroup();
+		if(dissolve) {
+			var pass = WktUtils.dissolve(wkts);
+			var d = pass.toObject();
+			d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+    			});
+			
+			group.addLayer(d);
+		}
+		else {
+			for(var i = 0; i<wkts.length;i++) {
+				var d = wkts[i].toObject();
+				group.addLayer(d);
+				d.setStyle({
+			          opacity:1,
+			          fillOpacity:0.7,
+			          radius:6,
+			          color: color
+    			});
+			
+			}
+		}
+			
+			
+			group.fileName = layer.fileName+"_buffer"+distance+"m";
+			layerlist.addLayer(group, color);
+		}, 5000);*/
 	},
+
 	createToolOptions: function () {
 		element = L.DomUtil.create("div", "tool-options");
-		element.appendChild(document.createTextNode("Distance: "));
-		this._distance = L.DomUtil.create("input", "buffer-distance");
-		this._distance.value = 100;
-		L.DomEvent.addListener(this._distance, "click", L.DomEvent.stopPropagation);
-		element.appendChild(this._distance);
-		element.appendChild(document.createTextNode(" m"));
-		element.appendChild(L.DomUtil.create("br", ""));
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;

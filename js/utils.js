@@ -12,7 +12,48 @@ var WktUtils = {};
 		});
 		return wkts;
 	
-	}; 
+	};
+	WktUtils.getEpsgString = function (epsgstring, callback) {
+		var num = epsgstring.split(":")[1];
+		var url =  "http://spatialreference.org/ref/epsg/"+num.toString()+"/proj4js/?jsoncallback=?";
+		$.getJSON(url,{} ,function() {  }).done(function() {  });
+	}
+	WktUtils.reprojectCoordinates = function (c, proj4StrFrom, proj4StrTo) {
+		if(Array.isArray(c[0])) {
+		 	var e = [];
+		 	for(var i = 0; i<c.length;i++) {
+		 		e.push(WktUtils.reprojectCoordinates(c[i], proj4StrFrom, proj4StrTo));
+		 	}
+		 }
+		 else {
+		 	var coord = proj4(proj4StrFrom,proj4StrTo,c);
+
+		 	return coord;
+		 }
+		return e;
+	}
+	WktUtils.reprojectGeoJson = function (geojson, epsgFrom, epsgTo, callback) {
+		var proj4stringFrom, proj4stringTo;
+		var numTo = epsgTo.split(":")[1];
+		var numFrom = epsgFrom.split(":")[1];
+		WktUtils.getEpsgString(epsgFrom);
+		WktUtils.getEpsgString(epsgTo);
+		var geojson = geojson;
+		var callback = callback;
+		var intervall = setInterval(function () {
+			if(Proj4js.defs["EPSG:"+numTo] && Proj4js.defs["EPSG:"+numFrom] && geojson) {
+				clearInterval(intervall);
+				proj4stringTo = Proj4js.defs["EPSG:"+numTo];
+				proj4stringFrom = Proj4js.defs["EPSG:"+numFrom]
+				for(var i = 0; i<geojson.features.length; i++) {
+					geojson.features[i].geometry.coordinates = WktUtils.reprojectCoordinates(geojson.features[i].geometry.coordinates, proj4stringFrom, proj4stringTo); 
+				}
+				
+			callback(geojson);
+			}
+
+		}, 1000);
+	};
 	WktUtils.pointLayerToWkt = function (layer) {
 
 		var wkts = [];
@@ -35,8 +76,9 @@ var WktUtils = {};
 			var firstProjection = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ';
 			var secondProjection = "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs ";
 			//I'm not going to redefine those two in latter examples.
-			
-		 	return proj4(firstProjection,secondProjection,c);
+			var coord =  proj4(firstProjection,secondProjection,c);
+		 	return coord;
+		 	
 		 }
 		return e;
 
@@ -70,25 +112,6 @@ var WktUtils = {};
 		return L.LineUtil.simplify(e, 20);
 
 	};
-	WktUtils.buffer = function (wkts, distance) {
-	if(!Array.isArray(wkts)) {
-		var wkts = [wkts];
-	}
-	for(var i=0;i<wkts.length;i++) {
-			var reader = new jsts.io.WKTReader();
-
-    	 var parser = new jsts.io.WKTParser();
-    	 var wkt = new Wkt.Wkt();
-	
-			wkts[i].components = WktUtils.transformWktComponentsToWebMercator(wkts[i].components);
-		 var input = reader.read(wkts[i].write());
-		 var buffer = input.buffer(distance);
-		 wkts[i] = new Wkt.Wkt(parser.write(buffer));
-		 wkts[i].components = WktUtils.transformWktToWGS84(wkts[i].components);
-		 
-	}
-		return wkts;
-	};
 	WktUtils.union = function (wkt1, wkt2) {
 	var reader = new jsts.io.WKTReader();
 
@@ -108,22 +131,9 @@ var WktUtils = {};
 			return wkts;
 		var wkt = wkts[0];
 		for(var i = 1; i<wkts.length;i++) {
-			console.log(i+'/'+wkts.length);
-			wkt = WktUtils.union(wkt, wkts[i]);
+			wkt.merge(wkts[i]);
 		}
 		return wkt;					
-	}
-	WktUtils.union2 = function(wkts) {
-		if(wkts.length == 1) {
-			return wkts[0];
-		}
-		var pass = wkt[0];
-		for(var  i = 1; i<wkts.length;i++) {
-				pass.push(WktUtils.union(pass, wkts[i]));
-			
-		}
-		return pass;
-
 	}
 	WktUtils.intersect =function(wkts1, wkts2) {
 		var reader = new jsts.io.WKTReader();

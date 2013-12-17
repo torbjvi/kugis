@@ -1,10 +1,11 @@
 Sidebar.Tool.Intersect = Sidebar.Tool.extend({
 	title: "Intersection",
-	wkt1: null,
+		wkt1: null,
 	wkt2: null,
-	_droppableText: "Drop two layers here in succession to intersect them",
+	_droppableText: "Drop two layers here in succession to create an intersection between them.",
 	afterDrop: function (event, context) {
-		this.toggleOptions();
+		
+		logger.newLog("Intersection...");
 		layer = event.draggable[0].this._layer;
 		var pointLayer = false;
 		if(this.wkt1 == null) {
@@ -34,6 +35,7 @@ Sidebar.Tool.Intersect = Sidebar.Tool.extend({
 			}
 		}
 		if((this.wkt1 != null) && (this.wkt2 != null)) {
+			this.toggleOptions();
 			var wkts = WktUtils.intersect(this.wkt1,this.wkt2);
 			d = wkts.toObject();
 			var color = colors.next();
@@ -45,11 +47,12 @@ Sidebar.Tool.Intersect = Sidebar.Tool.extend({
 			          color: color
     			});
 			var group = L.featureGroup().addLayer(d);
-			group.fileName = "Difference";
+			group.fileName = "Intersection";
 			layerlist.addLayer(group, color);
 			this.wkt1 = null;
 			this.wkt2 = null;
 		}
+		logger.done();
 
 	},
 	createToolOptions: function () {
@@ -59,13 +62,12 @@ Sidebar.Tool.Intersect = Sidebar.Tool.extend({
 		var con = this;
 		$(this._droppable).droppable({
 			drop: function (event, ui) {
-				Sidebar.Tool.Overlay.prototype.afterDrop.call(con, ui);
-
+				con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));
 		element.appendChild(this._droppable);
 		return element;
-		
 	}
+		
 });

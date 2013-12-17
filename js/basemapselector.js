@@ -1,6 +1,6 @@
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
-		'Acetate': L.tileLayer.provider('Acetate'),
+			'Acetate': L.tileLayer.provider('Acetate'),
 			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
 			'Kartverket Norges grunnkart': L.tileLayer.kartverket("norges_grunnkart"),
 			'Kartverket Norges grunnkart gråtone': L.tileLayer.kartverket("norges_grunnkart_graatone"),
@@ -86,12 +86,12 @@ var Basemap = L.Class.extend({
 		this.name = name;
 		this.layer = layer;
 		this._map = map;
-		var previewPoint = {
+		var previewPoint = { // this is a point outside of oslo that gives a good preview of how layers will look.
 		x: 4340,
 		y: 2383,
 		z: 13
 		};
-		this.preViewUrl = layer.getTileUrl(previewPoint);
+		this.preViewUrl = layer.getTileUrl(previewPoint); // gets the tile for the point this is used as the icon
 		this.createDomElement();
 	},
 	createDomElement: function () {

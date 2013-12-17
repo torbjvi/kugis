@@ -1,3 +1,4 @@
+// class containing colors used by the layers and functionality for stepping through them
 var Colors = L.Class.extend({
 	colors: [
 	"#1abc9c",

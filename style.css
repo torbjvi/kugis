@@ -72,6 +72,7 @@ form {
   color: white;
   vertical-align: center;
   font-size: 10px !important;
+  z-index: 1000;
 }
 .layerbutton {
     padding-left: 3px;
@@ -117,7 +118,8 @@ margin-right: 10px;
 padding: 1px;
 }
 .checkmark {
-  margin-right: 15px;
+  margin-top: 3px;
+  margin-right: 5px;
 padding: 1px;
 cursor: pointer;
 }
@@ -199,6 +201,7 @@ div.feature-extractor {
   color: white;
   padding: 10px;
   box-shadow: 10px 10px rgba(44, 62, 80, 0.7);
+  z-index: 1000;
 }
 li.feature-extractor .header {
   font-size: 20px;
@@ -237,4 +240,9 @@ color: #555555;
 border-radius: 4px;
 vertical-align: middle;
 border: 1px solid #cccccc;
+}
+.color-select-icon {
+  font-size: 14px;
+margin: 3px;
+cursor: pointer;
 }

@@ -12,17 +12,16 @@
 
 <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
 <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+ <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.css" />
 <link rel="stylesheet" href="jquery-ui-1.10.3.custom.min.css" />
 <link rel="stylesheet" href="style.css" />
 
 
 <script>
 
-
 //make the map
 
-
+// global obtions for layerstyle
 var options = {
   onEachFeature:function(feature, layer) {
     if (feature.properties) {
@@ -31,18 +30,18 @@ var options = {
       }).join("<br />"),{maxHeight:200});
       }
       layer.on('click', function (e) {
-        console.log(e.target);
+        
 
 // Serialize a WKT string from that geometry
                     
         
       });
   },
-  smoothFactor: 3.0,
+  smoothFactor: 3.0, // a factor that determines how generalized the display of vetor layers will be
     style:function(feature){
         return {
-          opacity:1,
-          fillOpacity:0.7,
+          opacity:0.8,
+          fillOpacity:0.4,
           radius:6,
           color: color
         }
@@ -65,25 +64,72 @@ var options = {
 
 
 <script>
+function dbConnection() { // sets up a connection to the IndexedDB
+  db.open( { // opens a DB connection and creates the tables if they don't exist
+    server: 'kugis',
+    version: 1,
+    schema: {
+        layers: {
+            key: { keyPath: 'id' , autoIncrement: true }
+        }
+    }
+  } ).done( function ( s ) {
+    console.log("");
+      window.dbserver = s; // stores the connecopn as a "global object"
+       addLayersFromDb(); // adds the layers contained with in the db
+  } );
+};
+
 var basemapselector, map, defaultLayer, logger, sidebar, map, cw, sidebar, layerlist, colors, color;
+var Proj4js = {
+  defs: {}
+};
+function addLayersFromDb() { // adds stored layers from a previous session
+  window.dbserver.layers.query().filter().execute().done( 
+    function (results) {
+      window.dbserver.layers.clear(); // clears the table
+      for(var i = 0; i<results.length; i++) { // ads the stored layers to the map
+        color = colors.next();
+        var layer = L.geoJson(results[i].geojson, options);
+        layer.fileName = results[i].name;
+        layerlist.addLayer(layer, color);
+      }
+  }
+  );
+};
 function init() {
+  
   worker = cw(function(data,cb){
   importScripts('./libs/shp.js');
-  console.log("hello from work");
   shp(data).then(cb);
-});
+}); // worker that takes care of adding shape files
+  // creates the leaflet map object
   map = L.map("map",
     {
+      minZoom: 4,
+      maxZoom: 17,
       zoomControl:true,
-      center: [58.1467938592621, 7.9959869384765625],
+      center: [63.4289, 10.5208], // default starting point of the map
         zoom: 13
     }
     );
-  defaultLayer = L.tileLayer.provider('Acetate');
-  colors = new Colors();
-  defaultLayer.addTo(map);
-      basemapselector = new BasemapSelector(map, document.body);
 
+  
+  
+  //var b = L.polygon(boundary);
+  //var bgUrl = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=terreng_norgeskart&zoom={z}&x={x}&y={y}';
+  //var shadows = new L.TileLayer.BoundaryCanvas(bgUrl, { maxZoom: 14,minZoom: 7, boundary: b.getLatLngs() });
+
+   // shadows.addTo(map);
+  defaultLayer = L.tileLayer.provider('Acetate', { opacity: 1 }); // default background map
+  colors = new Colors(); // color object that holds some default colors used by the layers.
+  defaultLayer.addTo(map);
+  //L.tileLayer.provider('Acetate.roads', { opacity: 0.7 }).addTo(map);
+  //L.tileLayer.provider('Acetate.labels', { opacity: 1 }).addTo(map);
+  basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
+  
+  
+  
   basemapselector.hide();
   sidebar = new Sidebar(map);
    
@@ -93,41 +139,34 @@ function init() {
   tools = new Sidebar.Tools();
   var toolColors = new Colors();
   tools.addTo(sidebar);
+  // Adds the implemented tools to the sidebar
   tools.addTool(new Sidebar.Tool.Buffer(map, toolColors.next()));
-  //tools.addTool(new Sidebar.Tool.BufferRings(map, toolColors.next()));
-
-  tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Dissolve(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));
+  tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
   tools.addTool(new Sidebar.Tool.FeatureExtractor(map, toolColors.next()));
-  /*
-  tools.addTool(new Sidebar.Tool.Intersect(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Difference(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Simplify(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Overlay(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Distance(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Centroid(map, toolColors.next()));
-  tools.addTool(new Sidebar.Tool.Union(map, toolColors.next()));*/
-  layerlist.addTo(sidebar);
+
+  layerlist.addTo(sidebar); // Adds the layerlist to the sidebar
   asd.addTo(sidebar);
   var dropper = new Sidebar.FileDropper();
-  dropper.addTo(sidebar);
-  sidebar.addTo(document.body);
-
-  map.addControl(new NewButton());
+  dropper.addTo(sidebar); // Adds the element that supports dropping of new files to the sidebar
+  sidebar.addTo(document.body); // Ads the sidebar to the body of the document
+  dbConnection(); // Establishes connection with the IndexedDB
+  map.addControl(new NewButton()); // Adds a invisible element that supports dropping of new files to the map
   logger = new Logger();
-
 }
-//add them to the map
 
 
 
 </script>
-
+<script src="libs/db.js"></script>
 <script src="libs/colorbrewer.js"></script>
-<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+<script src="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.js"></script>
 <script src="libs/sha512.js"></script>
 <script src="libs/catiline.js"></script>
+<script src="libs/BoundaryCanvas.js"></script>
 <script src="js/colors.js"></script>
 <script src="libs/leaflet-providers.js"></script>
 <script src="js/L.TileLayer.Kartverket.js"></script>
@@ -142,6 +181,8 @@ function init() {
 <script src="js/Sidebar.Tool.Buffer.js"></script>
 <script src="js/Sidebar.Tool.Simplify.js"></script>
 <script src="js/Sidebar.Tool.Difference.js"></script>
+<script src="js/Sidebar.Tool.Dissolve.js"></script>
+<script src="js/Sidebar.Tool.Union.js"></script>
 <script src="js/Sidebar.Tool.FeatureExtractor.js"></script>
 <script src="js/Sidebar.FileDropper.js"></script>
 <script src="js/Sidebar.LayerList.Button.js"></script>
@@ -157,6 +198,9 @@ function init() {
 <script src="js/featureextractor.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/filedropper.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+<script type="text/javascript" src="libs/SOSI.js.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 
 </body>
 </html>

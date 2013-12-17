@@ -1,3 +1,4 @@
+// An invisible leaflet "control" that handles dragging and dropping of files.
 var NewButton= L.Control.extend({//creating the buttons
     options: {
         position: 'topleft'
@@ -8,7 +9,7 @@ var NewButton= L.Control.extend({//creating the buttons
         var div = L.DomUtil.create('form','bgroup');
         div.id="dropzone";
         
-   function handleFile(file){
+   function handleFile(file){ // functions that handles the result of a shapefile conversion and adds it to the map
     var addIt = function(geoJson){
        color = colors.next();
        var layer =L.geoJson(geoJson,options);
@@ -27,7 +28,7 @@ var NewButton= L.Control.extend({//creating the buttons
                 }else{
                   addIt(geoJson);
                 }
-              },function(a){console.log(a)});
+              },function(a){});
            }
        };
            reader.readAsArrayBuffer(file);
@@ -45,8 +46,51 @@ var NewButton= L.Control.extend({//creating the buttons
               return;
             }else{
               var geojson = JSON.parse(reader.result);
-              geojson.fileName = file.name.toLowerCase().replace(".geojson", "");
+
+              if(geojson.crs && geojson.crs.properties && geojson.crs.properties.name.indexOf("4326") == -1) {
+                var crs =  geojson.crs.properties.name.replace("urn:ogc:def:crs:", "").replace("::", ":");
+                WktUtils.reprojectGeoJson(geojson, crs, "epsg:4326", function (geojson) {
+                  
+                  geojson.fileName = file.name.toLowerCase().replace(".geojson", "");
                   addIt(geojson);
+                  
+                });
+              }
+              else{
+                  geojson.fileName = file.name.toLowerCase().replace(".geojson", "");
+                  addIt(geojson);
+              }
+              
+           }
+       };
+           reader.readAsText(file);
+   }
+   function handleSosiFile(file) {
+      var addIt = function(geoJson){
+       color = colors.next();
+       var layer =L.geoJson(geoJson,options);
+      layer.fileName = geoJson.fileName;
+       layerlist.addLayer(layer, color);
+    }
+        var reader = new FileReader();
+        reader.onload=function(){
+            if(reader.readyState !== 2 || reader.error){
+              return;
+            }else{
+              var worker = new Worker("workers/sosiimporter.js");
+              worker.onmessage = function (evt) {
+                var geojson = evt.data;
+                   geojson.fileName = file.name.toLowerCase().replace(".sos", "");
+                 
+                WktUtils.reprojectGeoJson(geojson, geojson.crs.properties.name, "epsg:4326", function (geojson) {
+                  geojson.fileName = file.name.toLowerCase().replace(".sos", "");
+                  addIt(geojson);
+                  
+                });
+              }
+              worker.postMessage(reader.result);
+              
+
               
            }
        };
@@ -84,12 +128,16 @@ function drop(e) {
  
  var i = 0;
  var len = files.length;
- console.log(files);
  if(!len){return}
-  if(files[0].name.toLowerCase().indexOf(".geojson") > -1) {
+  if(files[0].name.toLowerCase().indexOf(".geojson") > -1 || files[0].name.toLowerCase().indexOf(".json") > -1) {
     while(i<len){
-      console.log("geojson")
     handleGeosjon(files[i]);
+    i++;
+   }
+  }
+  else if(files[0].name.toLowerCase().indexOf(".sos") > -1) {
+    while(i<len){
+    handleSosiFile(files[i]);
     i++;
    }
   }

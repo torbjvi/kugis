@@ -1,3 +1,4 @@
+// A simple extention of leaflets tilelayer class that makes adding maps from Kartverket easier.
 L.TileLayer.Kartverket = L.TileLayer.extend({
 	options: {
 		attribution: 'Map data &copy; Kartverket'

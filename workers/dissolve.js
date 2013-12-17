@@ -1,29 +1,27 @@
 importScripts('../libs/javascript.util.js', '../libs/jsts.js'); 
-
-
+var wkts = [];
+var reader = new jsts.io.WKTReader();
+var parser =  new jsts.io.WKTParser();
 onmessage = function(evt) {
 
+
   
-  var reader = new jsts.io.WKTReader();
-  var parser =  new jsts.io.WKTParser();
-  var wkts = evt.data;
-    if(!Array.isArray(wkts)) {
-      wkts = [wkts];
-    }
-    else {
-      var queue = [];
-      for(var i = 0; i<wkts.length;i=i+2) {
-        if((i+1)>(wkts.length-1)) {
-          queue.push(wkts[i]);
-        }
-        else {
-         var wkt1 = reader.read(wkts[i]);
-         var wkt2 = reader.read(wkts[i+1]);
-         var union = wkt1.union(wkt2);
-         union = parser.write(union);
-         queue.push(union);
-        }
+  if(evt.data.polygon === null) {
+    wkts = evt.data.queue;
+    var input = reader.read(wkts.shift());
+    postMessage({polygon: parser.write(input), queue: wkts.length });
+  }
+  else {
+      var input = reader.read(wkts.shift());
+      var input2 = reader.read(wkts.shift());
+      var union = input2.union(input);
+      if(wkts.length == 0) {
+        polygon = parser.write(union);
       }
-    }
-  postMessage(queue);
+      else {
+        polygon = " ";
+        wkts.push(parser.write(union));
+      }
+    postMessage({polygon: polygon, queue: wkts.length });
+  }
 }

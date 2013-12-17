@@ -29,15 +29,3 @@ Sidebar.Tool = L.Class.extend({
 		return  L.DomUtil.create("div", "tool-options");
 	}
 });
-Sidebar.Tool.Overlay = Sidebar.Tool.extend({
-	title: "Overlay"
-});
-Sidebar.Tool.Distance = Sidebar.Tool.extend({
-	title: "Distance"
-});
-Sidebar.Tool.Centroid = Sidebar.Tool.extend({
-	title: "Centroid"
-});
-Sidebar.Tool.Union = Sidebar.Tool.extend({
-	title: "Union"
-});
