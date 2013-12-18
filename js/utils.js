@@ -27,7 +27,8 @@ var WktUtils = {};
 		 }
 		 else {
 		 	var coord = proj4(proj4StrFrom,proj4StrTo,c);
-
+		 	coords[0] = coords[0].toFixed(3);
+		 	coords[1] = coords[0].toFixed(3);
 		 	return coord;
 		 }
 		return e;
@@ -77,6 +78,8 @@ var WktUtils = {};
 			var secondProjection = "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs ";
 			//I'm not going to redefine those two in latter examples.
 			var coord =  proj4(firstProjection,secondProjection,c);
+			coord.x = coord.x.toFixed(3);
+			coord.y = coord.y.toFixed(3);
 		 	return coord;
 		 	
 		 }
