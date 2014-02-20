@@ -1,7 +1,7 @@
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
 			'kugis':  L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'),
-			'Mapbox Hybrid': L.tileLayer.provider('torbjornav.hb2e57d0'),
+			'Mapbox Hybrid': L.tileLayer.provider('MapBox.torbjornav.hb2e57d0'),
 			'Acetate': L.tileLayer.provider('Acetate'),
 			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
 			
