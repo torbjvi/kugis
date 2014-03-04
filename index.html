@@ -121,9 +121,9 @@ function init() {
   //var shadows = new L.TileLayer.BoundaryCanvas(bgUrl, { maxZoom: 14,minZoom: 7, boundary: b.getLatLngs() });
 
    // shadows.addTo(map);
-  defaultLayer = L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'); // default background map
+  //defaultLayer = L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'); // default background map
   colors = new Colors(); // color object that holds some default colors used by the layers.
-  defaultLayer.addTo(map);
+  //defaultLayer.addTo(map);
   //L.tileLayer.provider('Acetate.roads', { opacity: 0.7 }).addTo(map);
   //L.tileLayer.provider('Acetate.labels', { opacity: 1 }).addTo(map);
   basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
@@ -163,7 +163,7 @@ function init() {
 </script>
 <script src="libs/db.js"></script>
 <script src="libs/colorbrewer.js"></script>
-<script src="libs/leaflet.js"></script>
+<script src="libs/leaflet-src.js"></script>
 <script src="libs/sha512.js"></script>
 <script src="libs/catiline.js"></script>
 <script src="js/colors.js"></script>
