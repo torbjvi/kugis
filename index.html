@@ -121,20 +121,20 @@ function init() {
   //var shadows = new L.TileLayer.BoundaryCanvas(bgUrl, { maxZoom: 14,minZoom: 7, boundary: b.getLatLngs() });
 
    // shadows.addTo(map);
-  //defaultLayer = L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'); // default background map
+  defaultLayer = L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'); // default background map
   colors = new Colors(); // color object that holds some default colors used by the layers.
-  //defaultLayer.addTo(map);
+  defaultLayer.addTo(map);
   //L.tileLayer.provider('Acetate.roads', { opacity: 0.7 }).addTo(map);
   //L.tileLayer.provider('Acetate.labels', { opacity: 1 }).addTo(map);
-  basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
+ // basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
   
   
   
-  basemapselector.hide();
+  //basemapselector.hide();
   sidebar = new Sidebar(map);
    
   layerlist = new Sidebar.LayerList(map);
-  asd = new Sidebar.Basemap();
+  //asd = new Sidebar.Basemap();
  
   tools = new Sidebar.Tools();
   var toolColors = new Colors();
@@ -149,7 +149,7 @@ function init() {
   tools.addTool(new Sidebar.Tool.FeatureExtractor(map, toolColors.next()));
 
   layerlist.addTo(sidebar); // Adds the layerlist to the sidebar
-  asd.addTo(sidebar);
+  //asd.addTo(sidebar);
   var dropper = new Sidebar.FileDropper();
   dropper.addTo(sidebar); // Adds the element that supports dropping of new files to the sidebar
   sidebar.addTo(document.body); // Ads the sidebar to the body of the document
@@ -163,17 +163,17 @@ function init() {
 </script>
 <script src="libs/db.js"></script>
 <script src="libs/colorbrewer.js"></script>
-<script src="libs/leaflet-src.js"></script>
+<script src="libs/leaflet.js"></script>
 <script src="libs/sha512.js"></script>
 <script src="libs/catiline.js"></script>
 <script src="js/colors.js"></script>
 <script src="libs/leaflet-providers.js"></script>
 <script src="js/L.TileLayer.Kartverket.js"></script>
-<script src="js/basemapselector.js"></script>
+
 <script src="js/sidebar.js"></script>
 <script src="js/Sidebar.LayerList.js"></script>
 <script src="js/Sidebar.Tool.js"></script>
-<script src="js/Sidebar.Basemap.js"></script>
+
 <script src="js/Sidebar.Tools.js"></script>
 <script src="js/Sidebar.Tool.js"></script>
 <script src="js/Sidebar.Tool.Intersect.js"></script>
