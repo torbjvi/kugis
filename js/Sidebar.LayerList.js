@@ -28,14 +28,14 @@ Sidebar.LayerList = L.Class.extend({
     		}
 	},
 
-	addLayer: function (layer, color) {
-		var bounds = layer.getBounds();
-		this._map.fitBounds(bounds);
-		var layerButton = new Sidebar.LayerList.Button(layer, this._map, color);
-		if(this._element.childElementCount == 0)
-			this._element.appendChild(layerButton.getElement());
-		else
-			this._element.insertBefore(layerButton.getElement(),this._element.childNodes[0]);
+	addLayer: function (name, geojson) {
+		if(geojson.features.length>0) {
+			var layerButton = new Sidebar.LayerList.Button(name, geojson, this._map);
+			if(this._element.childElementCount == 0)
+				this._element.appendChild(layerButton.getElement());
+			else
+				this._element.insertBefore(layerButton.getElement(),this._element.childNodes[0]);
+		}
 		
 
 	},

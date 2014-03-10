@@ -8,37 +8,47 @@ Sidebar.Tool.Difference = Sidebar.Tool.extend({
 		logger.newLog("Difference...");
 		layer = event.draggable[0].this._layer;
 		var pointLayer = false;
-		if(this.wkt1 == null) {
-			for(key in layer._layers) {
-						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
-							pointLayer = true;
-						break;
-			}
-			if(!pointLayer) {
-				this.wkt1 = WktUtils.layerToWkt(layer);
-			}
+		var reader = new jsts.io.GeoJSONReader();
+		var gj = layer.toGeoJSON();
+		var fc = reader.read(gj);
+		var parser = new jsts.io.WKTParser();
+		var wkts = null;
+		while(fc.features.length > 0) {
+			var f = fc.features.shift();
+			var g = f.geometry;
+			if(g.CLASS_NAME == "jsts.geom.MultiPolygon" || g.CLASS_NAME == "jsts.geom.MultiLineString" || g.CLASS_NAME == "jsts.geom.MultiPoint") {
+						for(var i = 0; i<g.getNumGeometries();i++) {
+							var sg = g.getGeometryN(i);
+							var wkt = new Wkt.Wkt(parser.write(sg));
+							if(wkts == null) 
+								wkts = wkt;
+							else
+								wkts = wkts.merge(wkt);
+						}
+					}
 			else {
-				this.wkt1 = WktUtils.pointLayerToWkt(layer);
+				var wkt = new Wkt.Wkt(parser.write(f.geometry));
+				if(wkts == null) 
+					wkts = wkt;
+				else {
+					
+						wkts = wkts.merge(wkt);
+		
+					}
 			}
 		}
+		if(this.wkt1 == null) {
+			this.wkt1 = wkts;
+
+		}
 		else {
-			for(key in layer._layers) {
-						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
-							pointLayer = true;
-						break;
-			}
-			if(!pointLayer) {
-				this.wkt2 = WktUtils.layerToWkt(layer);
-			}
-			else {
-				this.wkt2 = WktUtils.pointLayerToWkt(layer);
-			}
+			this.wkt2 = wkts;
 		}
 		if((this.wkt1 != null) && (this.wkt2 != null)) {
 			this.toggleOptions();
 			var wkts = WktUtils.difference(this.wkt1,this.wkt2);
 			d = wkts.toObject();
-			var color = colors.next();
+			var color = "black";
 				
 			d.setStyle({
 			          opacity:1,

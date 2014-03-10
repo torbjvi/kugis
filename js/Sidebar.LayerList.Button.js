@@ -4,56 +4,88 @@ Sidebar.LayerList.Button = L.Class.extend({
 	_map: null,
 	_element: null,
 	_dbId: null,
-	initialize: function (layer, map, color) {
+	initialize: function (name, geojson, map) {
 		var context = this;
-		window.dbserver.layers.add( { // adds the layer to the IndexedDB, this is done here because the button needs to know the database key to remove it from the table when deleting the layer.
-			    name: layer.fileName,
-			    geojson: layer.toGeoJSON(),
+		
+		try {
+			var layer = L.geoJson(geojson, options);
+		}
+		catch (e) {
+			var layer = null;
+		}
+		if(layer !== null) {
+			window.dbserver.layers.add( { // adds the layer to the IndexedDB, this is done here because the button needs to know the database key to remove it from the table when deleting the layer.
+			    name: name,
+			    geojson: geojson,
 			} ).done( function ( item ) {
 			    context._dbId = item[0].id;
 			} );
-		this._color = color;
-		this._layer = layer;
-		this._strokeOpacity = 1.0;
-		this._fillOpacity = 0.7;
-		this._fillColor = color;
-		this._map = map;
-		layer.addTo(map);
-		this._element = L.DomUtil.create("li", "layerlist-layer ui-state-default layerbutton");
-		this._element.this = this;
-		for(key in layer._layers) {
-			var l = layer._layers[key];
-			this.type = l.toGeoJSON().geometry.type;
-			break;
-		}
-		this._element.title = layer.fileName;
-		this._icon = this.getIcon(color);
-		this._element.appendChild(this._icon);
-		var layerTrunc = layer.fileName.substr(0,18);
-		this._textElement = L.DomUtil.create("span", "layer-title");
-		this._textElement.appendChild(document.createTextNode(" "+layerTrunc));
-		this._element.appendChild(this._textElement);
+			color = colors.next();
+			layer.setStyle({ color: color});
+			layer.fileName = name;
+			map.fitBounds(layer.getBounds());
+			this._color = color;
+			this._layer = layer;
+			this._strokeOpacity = 1.0;
+			this._fillOpacity = 0.7;
+			this._fillColor = color;
+			this._map = map;
+			layer.addTo(map);
+			this._element = L.DomUtil.create("li", "layerlist-layer ui-state-default layerbutton");
+			this._element.this = this;
+			for(key in layer._layers) {
+				var l = layer._layers[key];
+				this.type = l.toGeoJSON().geometry.type;
+				break;
+			}
+			this._element.title = layer.fileName;
+			this._icon = this.getIcon(color);
+			this._element.appendChild(this._icon);
+			var layerTrunc = layer.fileName.substr(0,18);
+			this._textElement = L.DomUtil.create("span", "layer-title");
+			this._textElement.appendChild(document.createTextNode(" "+layerTrunc));
+			this._element.appendChild(this._textElement);
 
-		this._checkIcon = L.DomUtil.create("i","icon-check-sign pull-right checkmark");
-		this._trash = L.DomUtil.create("i","icon-trash pull-right checkmark");
-		L.DomEvent.addListener(this._checkIcon, "click", this.toggleLayer, this);
-		//this._save = L.DomUtil.create("i","icon-save pull-right checkmark"); // Save functionality is disabled since it's not working reliably
-		//L.DomEvent.addListener(this._save, "click", this.save, this);
-		L.DomEvent.addListener(this._trash, "click", this.remove, this);
-		this._element.appendChild(this._checkIcon);
-		var prefIcon = L.DomUtil.create("i","icon-cogs pull-right checkmark");
-		this._element.appendChild(prefIcon);
-		L.DomEvent.addListener(prefIcon, "click", function (e) {
-			$(this._prefEl).toggle();
-		}, this);
-		this._element.appendChild(this._trash);
-		//this._element.appendChild(this._save);
-		this._prefEl = this.optionsElements();
-		this._element.appendChild(this._prefEl);
+			this._checkIcon = L.DomUtil.create("i","icon-check-sign pull-right checkmark");
+			this._trash = L.DomUtil.create("i","icon-trash pull-right checkmark");
+			L.DomEvent.addListener(this._checkIcon, "click", this.toggleLayer, this);
+			this._save = L.DomUtil.create("i","icon-save pull-right checkmark"); // Save functionality is disabled since it's not working reliably
+			L.DomEvent.addListener(this._save, "click", this.save, this);
+			L.DomEvent.addListener(this._trash, "click", this.remove, this);
+			this._element.appendChild(this._checkIcon);
+			var prefIcon = L.DomUtil.create("i","icon-cogs pull-right checkmark");
+			this._element.appendChild(prefIcon);
+			L.DomEvent.addListener(prefIcon, "click", function (e) {
+				$(this._prefEl).toggle();
+			}, this);
+			this._element.appendChild(this._trash);
+			this._element.appendChild(this._save);
+			this._save.title = "Save .geojson";
+			this._trash.title = "Remove layer";
+			this._checkIcon.title = "Toggle layer visibility";
+			this._prefEl = this.optionsElements();
+			this._element.appendChild(this._prefEl);
+		}
 
 	},
 	save: function () {
-  		window.prompt ("To save a layer, copy this text to a new textfile ending in .geojson: Ctrl+C, Enter", JSON.stringify(this._layer.toGeoJSON()));
+		var crs = {
+  				"type": "name",
+  				"properties": {
+    				"name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    				}
+  				};
+  		var geojson = this._layer.toGeoJSON();
+  		geojson["crs"] = crs;
+		var div = L.DomUtil.create("div", "save-geojson");
+		var json = JSON.stringify(geojson);
+		var blob = new Blob([json], {type: "text/plain;charset=utf-8"});
+		saveAs(blob, this._layer.fileName+".geojson");
+		//var textArea = L.DomUtil.create("textarea", "save-geojson");
+		//textArea.innerHTML = json;
+		//div.appendChild(textArea);
+		//document.body.appendChild(div);
+  		//window.prompt ("To save a layer, copy this text to a new textfile ending in .geojson: Ctrl+C, Enter", ));
 	},
 	updateStyle: function () {
 		var style = {

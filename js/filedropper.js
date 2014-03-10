@@ -10,11 +10,14 @@ var NewButton= L.Control.extend({//creating the buttons
         div.id="dropzone";
         
    function handleFile(file){ // functions that handles the result of a shapefile conversion and adds it to the map
+    
+    
+  
     var addIt = function(geoJson){
-       color = colors.next();
-       var layer =L.geoJson(geoJson,options);
-      layer.fileName = geoJson.fileName;
-       layerlist.addLayer(layer, color);
+
+       layerlist.addLayer(geoJson.fileName, geoJson);
+
+
     }
         var reader = new FileReader();
         reader.onload=function(){
@@ -35,10 +38,7 @@ var NewButton= L.Control.extend({//creating the buttons
    }
     function handleGeosjon(file){
     var addIt = function(geoJson){
-       color = colors.next();
-       var layer =L.geoJson(geoJson,options);
-      layer.fileName = geoJson.fileName;
-       layerlist.addLayer(layer, color);
+       layerlist.addLayer( geoJson.fileName, geoJson);
     }
         var reader = new FileReader();
         reader.onload=function(){
@@ -49,7 +49,7 @@ var NewButton= L.Control.extend({//creating the buttons
 
               if(geojson.crs && geojson.crs.properties && geojson.crs.properties.name.indexOf("4326") == -1) {
                 var crs =  geojson.crs.properties.name.replace("urn:ogc:def:crs:", "").replace("::", ":");
-                WktUtils.reprojectGeoJson(geojson, crs, "epsg:4326", function (geojson) {
+                WktUtils.reprojectGeoJson(geojson, crs, "epsg:4326", 8, function (geojson) {
                   
                   geojson.fileName = file.name.toLowerCase().replace(".geojson", "");
                   addIt(geojson);
@@ -67,10 +67,7 @@ var NewButton= L.Control.extend({//creating the buttons
    }
    function handleSosiFile(file) {
       var addIt = function(geoJson){
-       color = colors.next();
-       var layer =L.geoJson(geoJson,options);
-      layer.fileName = geoJson.fileName;
-       layerlist.addLayer(layer, color);
+       layerlist.addLayer( geoJson.fileName, geoJson);
     }
         var reader = new FileReader();
         reader.onload=function(){
@@ -82,7 +79,7 @@ var NewButton= L.Control.extend({//creating the buttons
                 var geojson = evt.data;
                    geojson.fileName = file.name.toLowerCase().replace(".sos", "");
                  
-                WktUtils.reprojectGeoJson(geojson, geojson.crs.properties.name, "epsg:4326", function (geojson) {
+                WktUtils.reprojectGeoJson(geojson, geojson.crs.properties.name, "epsg:4326", 8, function (geojson) {
                   geojson.fileName = file.name.toLowerCase().replace(".sos", "");
                   addIt(geojson);
                   

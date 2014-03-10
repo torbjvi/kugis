@@ -14,11 +14,16 @@ var WktUtils = {};
 	
 	};
 	WktUtils.getEpsgString = function (epsgstring, callback) {
-		var num = epsgstring.split(":")[1];
-		var url =  "http://spatialreference.org/ref/epsg/"+num.toString()+"/proj4js/?jsoncallback=?";
-		$.getJSON(url,{} ,function() {  }).done(function() {  });
+		if(Proj4js.defs[epsgstring]) {
+			return true;
+		}
+		else {
+			var num = epsgstring.split(":")[1];
+			var url =  "http://spatialreference.org/ref/epsg/"+num.toString()+"/proj4js/?jsoncallback=?";
+			$.getJSON(url,{} ,function() {  }).done(function() {  });
+		}	
 	}
-	WktUtils.reprojectCoordinates = function (c, proj4StrFrom, proj4StrTo) {
+	WktUtils.reprojectCoordinates = function (c, proj4StrFrom, proj4StrTo, precision) {
 		if(Array.isArray(c[0])) {
 		 	var e = [];
 		 	for(var i = 0; i<c.length;i++) {
@@ -26,17 +31,38 @@ var WktUtils = {};
 		 	}
 		 }
 		 else {
-		 	var coord = proj4(proj4StrFrom,proj4StrTo,c);
-		 	coords[0] = coords[0].toFixed(3);
-		 	coords[1] = coords[0].toFixed(3);
-		 	return coord;
+		 	var coords = proj4(proj4StrFrom,proj4StrTo,c);
+		 	if(precision) {
+		 		coords[0] = coords[0].toFixed(precision);
+		 		coords[1] = coords[1].toFixed(precision);
+		 	}
+		 	return coords;
 		 }
 		return e;
 	}
-	WktUtils.reprojectGeoJson = function (geojson, epsgFrom, epsgTo, callback) {
+	WktUtils.reprojectGeoJson = function (geojson, epsgFrom, epsgTo, precision, callback) {
+		if(!geojson.features){
+			var length = 1;
+		}
+		else {
+			var length = geojson.features.length;
+		}
+		logger.newLog("Project "+epsgFrom+"->"+epsgTo, length);
 		var proj4stringFrom, proj4stringTo;
 		var numTo = epsgTo.split(":")[1];
 		var numFrom = epsgFrom.split(":")[1];
+		var projectWorker = new Worker("workers/project.js");
+		projectWorker.onmessage = function (e) {
+			if(e.data.msg === "done") {
+				logger.done();
+				logger = new Logger();
+				callback(e.data.geojson);
+			}
+			else {
+				logger.step();
+			}
+
+		}
 		WktUtils.getEpsgString(epsgFrom);
 		WktUtils.getEpsgString(epsgTo);
 		var geojson = geojson;
@@ -46,16 +72,14 @@ var WktUtils = {};
 				clearInterval(intervall);
 				proj4stringTo = Proj4js.defs["EPSG:"+numTo];
 				proj4stringFrom = Proj4js.defs["EPSG:"+numFrom]
-				for(var i = 0; i<geojson.features.length; i++) {
-					geojson.features[i].geometry.coordinates = WktUtils.reprojectCoordinates(geojson.features[i].geometry.coordinates, proj4stringFrom, proj4stringTo); 
-				}
+				projectWorker.postMessage({geojson: geojson, proj4stringTo: proj4stringTo, proj4stringFrom: proj4stringFrom, precision: precision});
+
 				
-			callback(geojson);
 			}
 
 		}, 1000);
 	};
-	WktUtils.pointLayerToWkt = function (layer) {
+	/*WktUtils.pointLayerToWkt = function (layer) {
 
 		var wkts = [];
 		layer.eachLayer(function (l) {
@@ -137,7 +161,7 @@ var WktUtils = {};
 			wkt.merge(wkts[i]);
 		}
 		return wkt;					
-	}
+	}/*
 	WktUtils.intersect =function(wkts1, wkts2) {
 		var reader = new jsts.io.WKTReader();
 		var dissolve1 = WktUtils.dissolve(wkts1);
@@ -147,7 +171,7 @@ var WktUtils = {};
 		var intersect = wkt1.intersection(wkt2);
 		var parser = new jsts.io.WKTParser();
 		return new Wkt.Wkt(parser.write(intersect));
-	}
+	} */
 	WktUtils.difference =function(wkts1, wkts2) {
 		var reader = new jsts.io.WKTReader();
 		var dissolve1 = WktUtils.dissolve(wkts1);
@@ -155,9 +179,10 @@ var WktUtils = {};
 		var wkt1 = reader.read(dissolve1.write());
 		var wkt2 = reader.read(dissolve2.write());
 		var intersect = wkt1.difference(wkt2);
+		console.log
 		var parser = new jsts.io.WKTParser();
 		return new Wkt.Wkt(parser.write(intersect));
-	}
+	}/*
 	L.Util.clone = function (o){
 	  if(o == null || typeof(o) != 'object')
 	    return o;
@@ -168,4 +193,4 @@ var WktUtils = {};
 	    c[k] = L.Util.clone(o[k]);
 
 	  return c;
-}; 
+}; */

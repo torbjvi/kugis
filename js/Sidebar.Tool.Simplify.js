@@ -6,7 +6,7 @@ Sidebar.Tool.Simplify = Sidebar.Tool.extend({
 		layer = event.draggable[0].this._layer;
 		var tolereance = this._distance.value;
 		var group = L.featureGroup();
-			var color = colors.next();
+			var color = "black";
 			var style = {
 		          opacity:1,
 		          fillOpacity:0.7,

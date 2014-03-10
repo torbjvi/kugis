@@ -1,58 +1,46 @@
 Sidebar.Tool.Intersect = Sidebar.Tool.extend({
 	title: "Intersection",
-		wkt1: null,
-	wkt2: null,
+		layer1: null,
+	layer2: null,
 	_droppableText: "Drop two layers here in succession to create an intersection between them.",
 	afterDrop: function (event, context) {
 		
-		logger.newLog("Intersection...");
+		
 		layer = event.draggable[0].this._layer;
-		var pointLayer = false;
-		if(this.wkt1 == null) {
-			for(key in layer._layers) {
-						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
-							pointLayer = true;
-						break;
-			}
-			if(!pointLayer) {
-				this.wkt1 = WktUtils.layerToWkt(layer);
-			}
-			else {
-				this.wkt1 = WktUtils.pointLayerToWkt(layer);
-			}
-		}
-		else {
-			for(key in layer._layers) {
-						if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
-							pointLayer = true;
-						break;
-			}
-			if(!pointLayer) {
-				this.wkt2 = WktUtils.layerToWkt(layer);
-			}
-			else {
-				this.wkt2 = WktUtils.pointLayerToWkt(layer);
-			}
-		}
-		if((this.wkt1 != null) && (this.wkt2 != null)) {
+		if(this.layer1 == null)
+			this.layer1 = event.draggable[0].this._layer;
+		else
+			this.layer2 = event.draggable[0].this._layer;
+		if(this.layer1 !== null && this.layer2 !== null) {
 			this.toggleOptions();
-			var wkts = WktUtils.intersect(this.wkt1,this.wkt2);
-			d = wkts.toObject();
-			var color = colors.next();
-				
-			d.setStyle({
-			          opacity:1,
-			          fillOpacity:0.7,
-			          radius:6,
-			          color: color
-    			});
-			var group = L.featureGroup().addLayer(d);
-			group.fileName = "Intersection";
-			layerlist.addLayer(group, color);
-			this.wkt1 = null;
-			this.wkt2 = null;
-		}
-		logger.done();
+			this.execute(this.layer1, this.layer2);
+		 	this.layer1 = this.layer2 = null;
+		 }
+
+	},
+	execute: function (l1, l2) {
+
+		var reader = new jsts.io.GeoJSONReader();
+		var parser =  new jsts.io.GeoJSONParser();
+		var gj1 = l1.toGeoJSON();
+		var gj2 = l2.toGeoJSON();
+		var length = (gj1.features.length*gj2.features.length);
+		logger.newLog("Intersection...", length);
+		var intersectionWorker = new Worker('workers/intersect.js');
+
+		intersectionWorker.postMessage({gj1: gj1, gj2: gj2});
+		
+		intersectionWorker.onmessage = function (e) {
+			if(e.data.msg) {
+				logger.done();
+				logger = new Logger();
+				name = l1.fileName+"_"+l2.fileName;
+				layerlist.addLayer(name, e.data.fc);
+			}
+			else
+				logger.step();
+
+		};
 
 	},
 	createToolOptions: function () {
