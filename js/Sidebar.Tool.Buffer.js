@@ -81,7 +81,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
-		$(this._droppable).droppable({
+		$(this._element).droppable({
 			drop: function (event, ui) {
 				con.afterDrop(ui, con);
 			}

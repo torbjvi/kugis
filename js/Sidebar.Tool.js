@@ -28,13 +28,13 @@ Sidebar.Tool = L.Class.extend({
 	createToolOptions: function () {
 		element = L.DomUtil.create("div", "tool-options");
 
-
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
-		$(this._droppable).droppable({
+		$(this._element).droppable({
 			drop: function (event, ui) {
-				con.afterDrop(ui, con);
+				if($(con._option).is(":visible"))
+					con.afterDrop(ui, con);
 			}
 		});
 		this._droppable.appendChild(document.createTextNode(this._droppableText));

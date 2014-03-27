@@ -19,9 +19,7 @@ onmessage = function(evt) {
 	while(geojson.features.length > 0)  {
 
 			var f = geojson.features.shift();
-			f = correctRings(f);
 			var input = reader.read(f);
-			input.geometry.normalize();
 		    var buffer = input.geometry.buffer(evt.data.dist);
 		    buffers = parser.write(buffer);
 		    f.geometry = buffers;

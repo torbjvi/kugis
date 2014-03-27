@@ -1,3 +1,15 @@
+var MixIn = {
+getTileUrlPreview: function (coords) {
+		return L.Util.template(this._url, L.extend({
+			r: this.options.detectRetina && L.Browser.retina && this.options.maxZoom > 0 ? '@2x' : '',
+			s: this._getSubdomain(coords),
+			x: coords.x,
+			y: this.options.tms ? this._tileNumBounds.max.y - coords.y : coords.y,
+			z: coords.z
+		}, this.options));
+	}
+}; // Adds back the ability to get a tile at a zoom and coordlevel
+L.TileLayer.include(MixIn);
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
 			'kugis':  L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'),
@@ -94,7 +106,8 @@ var Basemap = L.Class.extend({
 		y: 2383,
 		z: 13
 		};
-		this.preViewUrl = layer.getTileUrl(previewPoint); // gets the tile for the point this is used as the icon
+
+		this.preViewUrl = layer.getTileUrlPreview(previewPoint); // gets the tile for the point this is used as the icon
 		this.createDomElement();
 	},
 	createDomElement: function () {

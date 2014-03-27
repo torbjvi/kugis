@@ -47,7 +47,7 @@ var NewButton= L.Control.extend({//creating the buttons
             }else{
               var geojson = JSON.parse(reader.result);
 
-              if(geojson.crs && geojson.crs.properties && geojson.crs.properties.name.indexOf("4326") == -1) {
+              if(geojson.crs && geojson.crs.properties && geojson.crs.properties.name.indexOf("4326") == -1 && geojson.crs.properties.name.indexOf("CRS84") == -1) {
                 var crs =  geojson.crs.properties.name.replace("urn:ogc:def:crs:", "").replace("::", ":");
                 WktUtils.reprojectGeoJson(geojson, crs, "epsg:4326", 8, function (geojson) {
                   

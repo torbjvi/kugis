@@ -30,8 +30,7 @@ var options = {
       }).join("<br />"),{maxHeight:200});
       }
       layer.on('click', function (e) {
-                    
-        console.log(e);
+             
       });
   },
   smoothFactor: 1.0, // a factor that determines how generalized the display of vetor layers will be
@@ -121,15 +120,15 @@ function init() {
   defaultLayer.addTo(map);
   //L.tileLayer.provider('Acetate.roads', { opacity: 0.7 }).addTo(map);
   //L.tileLayer.provider('Acetate.labels', { opacity: 1 }).addTo(map);
- // basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
+ basemapselector = new BasemapSelector(map, document.body); // Initializes the basmeap selector and adds it to the body of the document
   
   
   
-  //basemapselector.hide();
+  basemapselector.hide();
   sidebar = new Sidebar(map);
    
   layerlist = new Sidebar.LayerList(map);
-  //asd = new Sidebar.Basemap();
+  asd = new Sidebar.Basemap();
  
   tools = new Sidebar.Tools();
   var toolColors = new Colors();
@@ -150,7 +149,7 @@ function init() {
     
 
   layerlist.addTo(sidebar); // Adds the layerlist to the sidebar
-  //asd.addTo(sidebar);
+  asd.addTo(sidebar);
   var dropper = new Sidebar.FileDropper();
   dropper.addTo(sidebar); // Adds the element that supports dropping of new files to the sidebar
   sidebar.addTo(document.body); // Ads the sidebar to the body of the document
@@ -174,12 +173,13 @@ function init() {
 <script src="js/sidebar.js"></script>
 <script src="js/Sidebar.LayerList.js"></script>
 <script src="js/Sidebar.Tool.js"></script>
-
+<script src="js/Sidebar.Tools.js"></script>
 <script src="js/Sidebar.Tools.js"></script>
 <script src="js/Sidebar.Tool.js"></script>
 <script src="js/Sidebar.Tool.Intersect.js"></script>
 <script src="js/Sidebar.Tool.Buffer.js"></script>
-
+<script src="js/Sidebar.Basemap.js"></script>
+<script src="js/basemapselector.js"></script>
 <script src="js/Sidebar.Tool.Buffer2.js"></script>
 <script src="js/Sidebar.Tool.Simplify.js"></script>
 <script src="js/Sidebar.Tool.Difference.js"></script>
@@ -191,6 +191,8 @@ function init() {
 <script src="js/Sidebar.Tool.FeatureExtractor.js"></script>
 <script src="js/Sidebar.FileDropper.js"></script>
 <script src="js/Sidebar.LayerList.Button.js"></script>
+<script src="js/Sidebar.Basemap.js"></script>
+<script src="js/basemapselector.js"></script>
 <script type="text/javascript" src="libs/wicket.js"></script>
 <script type="text/javascript" src="libs/wicket-leaflet.js"></script>
 <script type="text/javascript" src="libs/attache.array.min.js"></script>
