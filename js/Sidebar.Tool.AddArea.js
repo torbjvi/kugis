@@ -9,10 +9,10 @@ afterDrop: function (event, context) {
 	var callback = function (geojson) {
 			var reader = new jsts.io.GeoJSONReader();
 			var feature = reader.read(geojson);
-			if(!l.feature.properties)
-				l.feature.properties = {};
-			l.feature.properties["area"] =  feature.geometry.getArea().toFixed(2);
-			l.bindPopup(Object.keys(feature.properties).map(function(k){
+			if(!layers[i].feature.properties)
+				layers[i].feature.properties = {};
+			layers[i].feature.properties["area"] =  feature.geometry.getArea().toFixed(2);
+			layers[i].bindPopup(Object.keys(feature.properties).map(function(k){
 		        return k + ": " + feature.properties[k] ;
 		      }).join("<br />"),{maxHeight:200});
 			i++;
