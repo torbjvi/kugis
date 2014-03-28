@@ -4,6 +4,9 @@ _droppableText: "Instruction text",
 afterDrop: function (event, context) {
 	var layer = event.draggable[0].this._layer;
 	var reproj
+	var layers = layer.getLayers();
+	var i = 0;
+	WktUtils.reprojectGeoJson(layers[0].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
 	var parser = layer.eachLayer(function (l) {
 		var geoFeature = l.feature;
 		
@@ -17,7 +20,8 @@ afterDrop: function (event, context) {
 		        return k + ": " + feature.properties[k] ;
 		      }).join("<br />"),{maxHeight:200});
 		}
-		WktUtils.reprojectGeoJson(geoFeature, "EPSG:4326",  "EPSG:32632", 3, callback);
+		i++;
+		WktUtils.reprojectGeoJson(layers[i].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
 	});
 },		
 });
