@@ -24,10 +24,12 @@ onmessage = function(evt) {
 			 	if(!intersection.isEmpty()) {
 			 		var properties = {};
 			 		for(var key in f.properties) {
-			 			properties["1."+key] = f.properties[key];
+			 			if(key != "kugisCreated")
+			 				properties["1."+key] = f.properties[key];
 			 		}
 			 		for(var key in f2.properties) {
-			 			properties["2."+key] = f2.properties[key];
+			 			if(key != "kugisCreated")
+			 				properties["2."+key] = f2.properties[key];
 			 		}
 			 		properties["kugisCreated"] = "true";
 			 		intersections.push({ geometry: intersection, properties: properties });
