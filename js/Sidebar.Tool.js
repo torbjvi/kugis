@@ -25,7 +25,21 @@ Sidebar.Tool = L.Class.extend({
 	getElement: function() {
 		return this._element;
 	},
-	createToolOptions: function() {
-		return  L.DomUtil.create("div", "tool-options");
+	createToolOptions: function () {
+		element = L.DomUtil.create("div", "tool-options");
+
+		this._droppable = L.DomUtil.create('div', 'droppable');
+
+		var con = this;
+		$(this._element).droppable({
+			drop: function (event, ui) {
+				if($(con._option).is(":visible"))
+					con.afterDrop(ui, con);
+			}
+		});
+		this._droppable.appendChild(document.createTextNode(this._droppableText));
+		element.appendChild(this._droppable);
+		return element;
+		
 	}
 });

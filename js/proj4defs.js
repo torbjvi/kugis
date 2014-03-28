@@ -1,0 +1,2 @@
+proj4.defs("urn:ogc:def:crs:EPSG::26915", "+proj=utm +zone=15 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
+proj4js.defs("urn:ogc:def:crs:EPSG::4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";

@@ -6,7 +6,7 @@ Sidebar.Tool.FeatureExtractor = Sidebar.Tool.extend({
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
-		$(this._droppable).droppable({
+		$(this._element).droppable({
 			drop: function (event, ui) {
 				Sidebar.Tool.FeatureExtractor.prototype.afterDrop.call(con, ui);
 			}

@@ -167,7 +167,7 @@ li.logger-list {
 .logger-header {
   height: 40%;
   font-weight: bold;
-  font-size: 2em;
+  font-size: 1em;
   margin-top: 10px;
   text-align: center;
 }
@@ -191,6 +191,7 @@ li.logger-list {
   position: absolute;
   bottom: 5px;
   width: 165px !important;
+  height: 60px;;
 }
 div.feature-extractor {
   position: fixed;

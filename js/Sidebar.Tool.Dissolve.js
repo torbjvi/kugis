@@ -4,68 +4,37 @@ Sidebar.Tool.Dissolve = Sidebar.Tool.extend({
 	afterDrop: function (event, context) {
 		this.toggleOptions();
 		var message = "test";
-		dissolveWorker = new Worker('workers/dissolve.js');
+		
 		layer = event.draggable[0].this._layer;
-		 this.execute(layer);
+		var geojson = layer.toGeoJSON();
+		 this.execute(geojson);
 
 	},
-	execute: function (layer) {
-		var pointLayer = false;
-		dissolveWorker.onmessage = function(evt) {
-
-		 	var queue = evt.data.queue;
-		 	logger.step();
-		 	if(queue != 0) {
-		 		dissolveWorker.postMessage(evt.data);
-		 	}
-		 	if(queue == 0) {
-		 		wktsb = [evt.data.polygon];
-					 	
-					 		var color = colors.next();
-							var group = L.featureGroup();
-							
-							group.fileName = layer.fileName+"_dissolved";
-					 		for(var i = 0; i<wktsb.length;i++) {
-					 			wktsb[i] = new Wkt.Wkt(wktsb[i]);
-								var d = wktsb[i].toObject();
-								group.addLayer(d);
-								d.setStyle({
-							          opacity:1,
-							          fillOpacity:0.7,
-							          radius:6,
-							          color: color
-				    			});
-							}
-							layerlist.addLayer(group, color);
-							logger.done();
-							logger = new Logger();
-
-				
-					 	
-		 	}
-
-		  };
-
-		for(key in layer._layers) {
-					if(layer._layers[key].feature != null &&layer._layers[key].feature.geometry.type == "Point")
-						pointLayer = true;
-					break;
-		}
-		var wkts;
-		if(!pointLayer) {
-			wkts = WktUtils.layerToWkt(layer);
-		}
-		else {
-			wkts = WktUtils.pointLayerToWkt(layer);
-		}
-
-			logger.newLog("Dissolving", wkts.length, 0);
-		for(var i = 0;i<wkts.length;i++) {
-			
-			wkts[i] = wkts[i].write();
-		}
-		
-		dissolveWorker.postMessage({polygon:null, queue: wkts});
+	execute: function (geojson, callback, name) {
+		var dissolveWorker = new Worker('workers/dissolve2.js');
+		var features = [];
+		var map = this._map;	
+		logger.newLog("Dissolve", geojson.features.length, 0);
+		dissolveWorker.postMessage({geojson: geojson});
+		dissolveWorker.onmessage = function (e) {
+			if(e.data.msg)
+				logger.step();
+			else {
+				logger.done();
+				logger = new Logger();
+				if(callback) {
+					callback(e.data.geojson)
+				}
+				else {
+					var color = "black";
+					var l = L.geoJson(e.data.geojson, { style: {color: color } });
+					if(!name)
+						name = layer.fileName+"_diss";
+					layerlist.addLayer(name, e.data.geojson, color);
+					
+				}
+			}
+		};
 	},
 
 	createToolOptions: function () {
@@ -73,7 +42,7 @@ Sidebar.Tool.Dissolve = Sidebar.Tool.extend({
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
-		$(this._droppable).droppable({
+		$(this._element).droppable({
 			drop: function (event, ui) {
 				con.afterDrop(ui, con);
 			}

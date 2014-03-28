@@ -18,7 +18,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		 	if(queue == 0) {
 		 					wktsb = evt.data.buffers;
 					 	
-					 		var color = colors.next();
+					 		var color = "black";
 							var group = L.featureGroup();
 							
 							group.fileName = layer.fileName+"_buffer"+distance+"m";
@@ -81,7 +81,7 @@ Sidebar.Tool.Buffer = Sidebar.Tool.extend({
 		this._droppable = L.DomUtil.create('div', 'droppable');
 
 		var con = this;
-		$(this._droppable).droppable({
+		$(this._element).droppable({
 			drop: function (event, ui) {
 				con.afterDrop(ui, con);
 			}

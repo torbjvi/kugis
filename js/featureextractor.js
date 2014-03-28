@@ -131,12 +131,15 @@ var FeatureExtractor = L.Class.extend({
 		var featureGroup = this._layer;
 		var ruleList = this.ruleList;
 		var rules = [];
+		var featureCollection = {
+			type: "FeatureCollection",
+			features: []
+		};
 		for(var i = 0; i<ruleList.childElementCount; i++) {
 			rules.push({field: ruleList.childNodes[i].field.value, operation: ruleList.childNodes[i].operation.value, fieldValue: ruleList.childNodes[i].fieldValue.value});
 		}
 		var group = L.featureGroup();
 		group.fileName = this.nameField.value;
-		var color = colors.next();
 		this._layer.eachLayer(function (l) {
 			var result = true;
 			for(var i = 0; i<rules.length; i++) {
@@ -183,12 +186,12 @@ var FeatureExtractor = L.Class.extend({
 			if(result) {
 					featureGroup.removeLayer(l);
 					l.setStyle({color: color});
-					group.addLayer(l);
+					featureCollection.features.push(l.feature);
 
 					
 			}
 		});
-		layerlist.addLayer(group, color);
+		layerlist.addLayer(this.nameField.value,featureCollection);
 
 	}
 
