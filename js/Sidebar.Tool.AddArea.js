@@ -6,11 +6,7 @@ afterDrop: function (event, context) {
 	var reproj
 	var layers = layer.getLayers();
 	var i = 0;
-	WktUtils.reprojectGeoJson(layers[0].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
-	var parser = layer.eachLayer(function (l) {
-		var geoFeature = l.feature;
-		
-		var callback = function (geojson) {
+	var callback = function (geojson) {
 			var reader = new jsts.io.GeoJSONReader();
 			var feature = reader.read(geojson);
 			if(!l.feature.properties)
@@ -19,9 +15,10 @@ afterDrop: function (event, context) {
 			l.bindPopup(Object.keys(feature.properties).map(function(k){
 		        return k + ": " + feature.properties[k] ;
 		      }).join("<br />"),{maxHeight:200});
-		}
-		i++;
-		WktUtils.reprojectGeoJson(layers[i].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
-	});
+			i++;
+			WktUtils.reprojectGeoJson(layers[i].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
+	};
+	WktUtils.reprojectGeoJson(layers[i].feature, "EPSG:4326",  "EPSG:32632", 3, callback);
+	
 },		
 });
