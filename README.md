@@ -28,5 +28,8 @@ JSTS is used for most spatial operations. Every geographic operation happens cli
 * Dissolve is very slow in the last steps of the operation
 * Detailed and large datasets should be prepared (generalized)
 * GeoJSON files containing more than one type of geometries are not supported yet.
+* FeatureExtractor gets the property keys for only the first Feature
 
-FeatureExtractor gets the property keys for only the first Feature
+There are probably more.
+
+
