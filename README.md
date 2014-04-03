@@ -7,6 +7,9 @@ KuGIS (Temporary name and logo for now. Ku=Cow in norwegian) is a simple GIS int
 
 It's meant to work on prepared datasets for a smaller region. Larger regions and more detailed datasets can be used but the interface and the geoprocessing will go slow. Also the memory usage will be very high.
 
+It's mostly drag and drop based, so to start a tool you first click on it and then you drag the layer you want to perform operations on to it.
+
+
 ###Tools currently implemented are
 * Buffering
 * Dissolve
