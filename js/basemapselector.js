@@ -12,11 +12,6 @@ getTileUrlPreview: function (coords) {
 L.TileLayer.include(MixIn);
 var BasemapSelector = L.Class.extend({
 	baseMaps: { // The default maps that can be selected from
-			'kugis':  L.tileLayer.provider('MapBox.torbjornav.map-d9hhchjc'),
-			'Mapbox Hybrid': L.tileLayer.provider('MapBox.torbjornav.hb2e57d0'),
-			'Acetate': L.tileLayer.provider('Acetate'),
-			'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor'),
-			
 			'Kartverket Norges grunnkart': L.tileLayer.kartverket("norges_grunnkart"),
 			'Kartverket Norges grunnkart gråtone': L.tileLayer.kartverket("norges_grunnkart_graatone"),
 			'OpenStreetMap Default': L.tileLayer.provider('OpenStreetMap.Mapnik'),
