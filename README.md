@@ -24,6 +24,7 @@ JSTS is used for most spatial operations. Every geographic operation happens cli
 
 ##Usage
 
+Live version is available at: http://torbjvi.github.io/kugis/
 There are some introductory videos here: https://www.youtube.com/playlist?list=PL1EiXGcwRKmAsWwRlyN-YUytrhNw-qvyo&feature=mh_lolz. Titles are in norwegian but the interface is in English so it should be OK to follow the steps that are done.
 
 The application support drag and drop loading of local GeoJSON , shapefiles and files in the norwegian format SOSI. Shapefiles must be placed in a zip-file containing at least the three files *.shp, *.prj and *.dbf. For shapefile support I'm using the library shapefile-js and for SOSI I'm using the library SOSI.js
